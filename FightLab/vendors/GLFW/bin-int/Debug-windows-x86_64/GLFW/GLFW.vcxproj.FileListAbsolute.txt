@@ -1,0 +1,6 @@
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\Project_Commander\Engine\vendors\GLFW\bin\Debug-windows-x86_64\GLFW\GLFW.pdb
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\Project_Commander\Engine\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\W-Engine\Engine\vendors\GLFW\bin\Debug-windows-x86_64\GLFW\GLFW.pdb
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\W-Engine\Engine\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin\Debug-windows-x86_64\GLFW\GLFW.pdb
+C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb
