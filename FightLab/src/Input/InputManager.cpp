@@ -8,3 +8,8 @@ InputManager::InputManager()
 InputManager::~InputManager()
 {
 }
+
+void InputManager::ProcessInput()
+{
+	glfwPollEvents();
+}

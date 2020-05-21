@@ -14,6 +14,7 @@
 #include <gtx/hash.hpp>
 
 #include"GLFW/glfw3.h"
+#include "GLFW/glfw3native.h"
 
 #include "vulkan/vulkan.h"
 
@@ -31,6 +32,8 @@
 #include <bitset>
 #include <stdint.h>
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #endif // ! PCH_H
 

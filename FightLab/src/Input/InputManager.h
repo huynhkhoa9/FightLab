@@ -4,5 +4,7 @@ class InputManager
 public:
 	InputManager();
 	~InputManager();
+
+	void ProcessInput();
 };
 
