@@ -36,17 +36,17 @@ project "FightLab"
 
 	includedirs
 	{
-		"Engine/src",
-		"Engine/vendors/GLFW/include",
-		"Engine/vendors/vulkan/Include",
-		"Engine/vendors/GLM/glm/",
-		"Engine/vendors/STB"
+		"FightLab/src",
+		"FightLab/vendors/GLFW/include",
+		"FightLab/vendors/vulkan/Include",
+		"FightLab/vendors/GLM/glm/",
+		"FightLab/vendors/STB"
 	}
 
 	links
 	{
 		"GLFW",
-		"Engine/vendors/vulkan/Lib/vulkan-1.lib"
+		"FightLab/vendors/vulkan/Lib/vulkan-1.lib"
 	}
 
 	filter "system:windows"
@@ -90,17 +90,17 @@ project "Client"
 
 	includedirs
 	{
-		"Engine/src",
-		"Engine/vendors/GLFW/include",
-		"Engine/vendors/vulkan/Include",
-		"Engine/vendors/GLM/glm",
-		"Engine/vendors/STB"
+		"FightLab/src",
+		"FightLab/vendors/GLFW/include",
+		"FightLab/vendors/vulkan/Include",
+		"FightLab/vendors/GLM/glm",
+		"FightLab/vendors/STB"
 
 	}
 
 	links
 	{
-		"Engine"
+		"FightLab"
 	}
 
 	filter "system:windows"
