@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_map>
 #include <map>
+#include <bitset>
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -35,8 +36,9 @@
 #include <chrono>
 #include <thread>
 
+#include "Core/EventSystem/EventSystem.h"
+
 #endif // ! PCH_H
 
 #define MAX_POPULATION 1024
 //MAX_FRAMES_IN_FLIGHT = 2;
-

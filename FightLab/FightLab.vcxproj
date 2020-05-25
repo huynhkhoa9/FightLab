@@ -145,7 +145,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\StateMachine\FightLabSM.cpp" />
     <ClCompile Include="src\Application\Application.cpp" />
+    <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -155,13 +157,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="src\StateMachine\State.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\StateMachine\FightLabSM.h" />
     <ClInclude Include="src\Application\Application.h" />
     <ClInclude Include="src\Application\Window.h" />
+    <ClInclude Include="src\Core\EventSystem\Event.h" />
+    <ClInclude Include="src\Core\EventSystem\EventSystem.h" />
+    <ClInclude Include="src\Input\FightLab_Input.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Core\FightLab.h" />
+    <ClInclude Include="src\StateMachine\GamePadInputAtom.h" />
+    <ClInclude Include="src\StateMachine\State.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

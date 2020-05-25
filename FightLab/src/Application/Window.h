@@ -19,10 +19,10 @@ struct Window
 
 	GLFWwindow* window;
 
-    void showFPS(double fps)
+    void showFPS(double frameTime)
     {
         std::stringstream ss;
-        ss << "Vulkan" << " " << "Dev" << " [" << ceil(fps) << " FPS]";
+        ss << "Vulkan" << " " << "Dev" << " [" << frameTime << " ms][" << (uint16_t)floor(1/ frameTime) << "FPS]";
 
         glfwSetWindowTitle(window, ss.str().c_str());
     }

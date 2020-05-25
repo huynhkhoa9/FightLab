@@ -1,11 +1,10 @@
 #pragma once
 #include "Window.h"
 #include "Input/InputManager.h"
+#include "Core/EventSystem/EventSystem.h"
 
-enum class ApplicationState
-{
-	RUNNING, PAUSED, QUIT, MINIZED
-};
+
+
 
 class Application
 {
@@ -19,11 +18,15 @@ public:
 
 	void CleanUp();
 
+	void SetAppState(ChangeAppStateEvent* event);
+
 private:
 	ApplicationState m_appState = ApplicationState::RUNNING;
 	Window* m_mainWindow;
 	InputManager* m_inputManager;
+	EventBus* m_eventBus;
 
+	int frames = 0;
 	void limitFrameRate();
 
 	std::chrono::duration<double, std::milli> targetFrameTime = std::chrono::duration<double, std::milli>(1000/62);
