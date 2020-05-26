@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "InputManager.h"
 #include "StateMachine/GamePadInputAtom.h"
+#include "FightLabMove/Move.h"
 
 InputManager::InputManager()
 {
@@ -58,12 +59,15 @@ InputManager::InputManager()
 	ForwardtoJab.RequiredButtons |= 1 << (uint16_t)GamePadButtons::Button0;
 	ForwardtoJab.ForbiddenButtons |= 1 << (uint16_t)GamePadButtons::Button1;
 
-	/*m_inputBuffer = { &DirectionalInputAtomMap[0], &ButtonAtomsUp[0], &ButtonAtomsUp[1],
-					  &DirectionalInputAtomMap[4], &ButtonAtomsUp[0], &ButtonAtomsUp[1],
-					  &DirectionalInputAtomMap[6], &ButtonAtomsUp[0], &ButtonAtomsUp[1],
-					  &DirectionalInputAtomMap[2], &ButtonAtomsUp[0], &ButtonAtomsUp[1],
-					  &DirectionalInputAtomMap[3], &ButtonAtomsPressed[0], &ButtonAtomsUp[1],
-					  &DirectionalInputAtomMap[2],& ButtonAtomsPressed[0], &ButtonAtomsUp[1] };*/
+	Move Idle;
+	Move Hadouken;
+	Move Jab;
+
+	MoveLink IdletoJabLink;
+	MoveLink IdletoHadoukenLink;
+	MoveLink JabtoHadoukenLink;
+	MoveLink JabtoIdleLink;
+	MoveLink HadoukentoIdleLink;
 }
 
 InputManager::~InputManager()
@@ -212,5 +216,4 @@ void InputManager::processDPad()
 	}
 
 	m_inputBuffer.push_back(&DirectionalInputAtomMap[directionMask]);
-
 }

@@ -39,7 +39,7 @@ State::~State()
 {
 }
 
-StateMachineResult State::RunState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
+StateMachineResult State::RunState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
 {
     bool bMustEndNow = (bTerminateImmediately || dataIndex > dataSource.size());
     if (remainingSteps && !bMustEndNow)
@@ -79,7 +79,7 @@ StateMachineResult State::RunState(std::vector<InputAtom*>& dataSource, uint32_t
     return Result;
 }
 
-StateMachineResult State::LoopState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
+StateMachineResult State::LoopState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
 {
     return RunState(dataSource, dataIndex + 1, remainingSteps - 1);
 }

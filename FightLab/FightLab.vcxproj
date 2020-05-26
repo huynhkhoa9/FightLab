@@ -145,6 +145,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp" />
+    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp" />
+    <ClCompile Include="src\Graphics\Animation\Animation.cpp" />
+    <ClCompile Include="src\FightLabMove\Move.cpp" />
+    <ClCompile Include="src\FightLabMove\MoveLink.cpp" />
     <ClCompile Include="src\StateMachine\FightLabSM.cpp" />
     <ClCompile Include="src\Application\Application.cpp" />
     <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
@@ -160,6 +165,12 @@
     <ClCompile Include="src\StateMachine\State.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h" />
+    <ClInclude Include="src\ResourceManagement\ResourceManger.h" />
+    <ClInclude Include="src\Graphics\Animation\Animation.h" />
+    <ClInclude Include="src\FightLabMove\Move.h" />
+    <ClInclude Include="src\FightLabMove\MoveLink.h" />
     <ClInclude Include="src\StateMachine\FightLabSM.h" />
     <ClInclude Include="src\Application\Application.h" />
     <ClInclude Include="src\Application\Window.h" />

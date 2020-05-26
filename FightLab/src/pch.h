@@ -19,12 +19,6 @@
 
 #include "vulkan/vulkan.h"
 
-//#define VMA_VULKAN_VERSION 1002000 // Vulkan 1.2
-#define VMA_VULKAN_VERSION 1001000 // Vulkan 1.1
-//#define VMA_VULKAN_VERSION 1000000 // Vulkan 1.0
-
-//#include "Graphics/vk_mem_alloc.h"
-
 #include "stb_image.h"
 //#include "Graphics/Geometry/tiny_obj_loader.h"
 

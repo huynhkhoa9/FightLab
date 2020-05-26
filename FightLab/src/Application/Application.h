@@ -2,9 +2,7 @@
 #include "Window.h"
 #include "Input/InputManager.h"
 #include "Core/EventSystem/EventSystem.h"
-
-
-
+#include "Graphics/RenderBackEnd/RenderManager.h"
 
 class Application
 {

@@ -26,6 +26,6 @@ class FLState : public State
 public:
 	FLState(StateMachineCompletionType completionType, bool bterminateImediately = false, bool bloop = true);
 	~FLState();
-	virtual StateMachineResult LoopState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps) override;
+	virtual StateMachineResult LoopState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps) override;
 };
 

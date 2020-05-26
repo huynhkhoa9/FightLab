@@ -64,11 +64,11 @@ public:
 	State(StateMachineCompletionType completionType, bool bterminateImediately = false, bool bloop = false);
 	~State();
 	
-	virtual StateMachineResult RunState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex = 0, uint32_t remainingSteps = -1);
+	virtual StateMachineResult RunState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex = 0, uint32_t remainingSteps = -1);
 	std::vector<BranchBase*> InstancedBranches;
 	std::vector<BranchBase*> SharedBranches;
 protected:
-	virtual StateMachineResult LoopState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps);
+	virtual StateMachineResult LoopState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps);
 	
 	StateMachineCompletionType CompletionType;
 	uint32_t bTerminateImmediately : 1;

@@ -98,7 +98,7 @@ FLState::~FLState()
 {
 }
 
-StateMachineResult FLState::LoopState(std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
+StateMachineResult FLState::LoopState(const std::vector<InputAtom*>& dataSource, uint32_t dataIndex, uint32_t remainingSteps)
 {
 	StateMachineResult result = RunState(dataSource, dataIndex + 1 + BUTTON_COUNT, remainingSteps - 1);
 	//std::cout << "Current State: " << this << " Final State: " << result.FinalState << std::endl;
