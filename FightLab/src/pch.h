@@ -1,7 +1,5 @@
-#pragma once
-#ifndef  PCH_H
+#ifndef PCH_H
 #define PCH_H
-
 #include <random>
 #include <vector>
 #include <array>
@@ -15,24 +13,23 @@
 #include <gtx/hash.hpp>
 
 #include"GLFW/glfw3.h"
-#include "GLFW/glfw3native.h"
-
 #include "vulkan/vulkan.h"
 
-#include "stb_image.h"
-//#include "Graphics/Geometry/tiny_obj_loader.h"
-
+//#define VMA_VULKAN_VERSION 1002000 // Vulkan 1.2
+#define VMA_VULKAN_VERSION 1001000 // Vulkan 1.1
+//#define VMA_VULKAN_VERSION 1000000 // Vulkan 1.0
+#include "Graphics/RenderBackEnd/vk_mem_alloc.h"
 
 #include <cstdint>
 #include <bitset>
 #include <stdint.h>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <thread>
+#include <optional>
 
 #include "Core/EventSystem/EventSystem.h"
-
-#endif // ! PCH_H
-
+#endif
 #define MAX_POPULATION 1024
 //MAX_FRAMES_IN_FLIGHT = 2;

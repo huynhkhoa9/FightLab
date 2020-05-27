@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Application">
+      <UniqueIdentifier>{D9DE78AF-4594-F1A4-CE88-EB7B3A3DE8A8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\EventSystem">
+      <UniqueIdentifier>{E4AE7F5F-D0A7-9EB1-F9D9-8336E5317EBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FightLabMove">
+      <UniqueIdentifier>{FD577F32-E9BA-0ED7-9240-478D7E82DA59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{1653CE33-0220-293F-2B39-17E717655ECD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Animation">
+      <UniqueIdentifier>{855FDEBF-7143-9F15-DAA3-9968C6A68997}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\RenderBackEnd">
+      <UniqueIdentifier>{6DD6A960-59D0-D2B2-423D-69C32ED6381F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\RenderBackEnd\Sprite">
+      <UniqueIdentifier>{13173D74-7F2F-249E-48DC-B337B4B3B837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{953A660D-014F-8EBE-CAD0-311E36A48AEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceManagement">
+      <UniqueIdentifier>{8AB4FDD2-7698-BE28-DFF8-B87BCBFBA8AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StateMachine">
+      <UniqueIdentifier>{BB54AC3C-A7B7-3BE1-503D-74973C7F0764}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Application\Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Application\Window.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\EventSystem\Event.h">
+      <Filter>Core\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\EventSystem\EventSystem.h">
+      <Filter>Core\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\FightLab.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FightLabMove\Move.h">
+      <Filter>FightLabMove</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FightLabMove\MoveLink.h">
+      <Filter>FightLabMove</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animation\Animation.h">
+      <Filter>Graphics\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderBackEnd\Sprite\Sprite.h">
+      <Filter>Graphics\RenderBackEnd\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderBackEnd\Vertex.h">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input\FightLab_Input.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input\InputManager.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ResourceManagement\ResourceManger.h">
+      <Filter>ResourceManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StateMachine\FightLabSM.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StateMachine\GamePadInputAtom.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StateMachine\State.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Application\Application.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\EventSystem\EventSystem.cpp">
+      <Filter>Core\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FightLabMove\Move.cpp">
+      <Filter>FightLabMove</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FightLabMove\MoveLink.cpp">
+      <Filter>FightLabMove</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Animation\Animation.cpp">
+      <Filter>Graphics\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input\InputManager.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp">
+      <Filter>ResourceManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StateMachine\FightLabSM.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StateMachine\State.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp" />
+  </ItemGroup>
+</Project>

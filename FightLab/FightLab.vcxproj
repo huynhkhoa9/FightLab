@@ -73,15 +73,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -93,10 +92,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -104,7 +103,6 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -117,10 +115,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -128,7 +126,6 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,48 +137,43 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="vendors\GLFW\GLFW.vcxproj">
-      <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp" />
-    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp" />
-    <ClCompile Include="src\Graphics\Animation\Animation.cpp" />
-    <ClCompile Include="src\FightLabMove\Move.cpp" />
-    <ClCompile Include="src\FightLabMove\MoveLink.cpp" />
-    <ClCompile Include="src\StateMachine\FightLabSM.cpp" />
-    <ClCompile Include="src\Application\Application.cpp" />
-    <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
-    <ClCompile Include="src\Input\InputManager.cpp" />
-    <ClCompile Include="src\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="src\StateMachine\State.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h" />
-    <ClInclude Include="src\ResourceManagement\ResourceManger.h" />
-    <ClInclude Include="src\Graphics\Animation\Animation.h" />
-    <ClInclude Include="src\FightLabMove\Move.h" />
-    <ClInclude Include="src\FightLabMove\MoveLink.h" />
-    <ClInclude Include="src\StateMachine\FightLabSM.h" />
     <ClInclude Include="src\Application\Application.h" />
     <ClInclude Include="src\Application\Window.h" />
     <ClInclude Include="src\Core\EventSystem\Event.h" />
     <ClInclude Include="src\Core\EventSystem\EventSystem.h" />
+    <ClInclude Include="src\Core\FightLab.h" />
+    <ClInclude Include="src\FightLabMove\Move.h" />
+    <ClInclude Include="src\FightLabMove\MoveLink.h" />
+    <ClInclude Include="src\Graphics\Animation\Animation.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\Sprite\Sprite.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\Vertex.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h" />
     <ClInclude Include="src\Input\FightLab_Input.h" />
     <ClInclude Include="src\Input\InputManager.h" />
-    <ClInclude Include="src\pch.h" />
-    <ClInclude Include="src\Core\FightLab.h" />
+    <ClInclude Include="src\ResourceManagement\ResourceManger.h" />
+    <ClInclude Include="src\StateMachine\FightLabSM.h" />
     <ClInclude Include="src\StateMachine\GamePadInputAtom.h" />
     <ClInclude Include="src\StateMachine\State.h" />
+    <ClInclude Include="src\pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Application\Application.cpp" />
+    <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
+    <ClCompile Include="src\FightLabMove\Move.cpp" />
+    <ClCompile Include="src\FightLabMove\MoveLink.cpp" />
+    <ClCompile Include="src\Graphics\Animation\Animation.cpp" />
+    <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp" />
+    <ClCompile Include="src\Input\InputManager.cpp" />
+    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp" />
+    <ClCompile Include="src\StateMachine\FightLabSM.cpp" />
+    <ClCompile Include="src\StateMachine\State.cpp" />
+    <ClCompile Include="src\pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="vendors\GLFW\GLFW.vcxproj">
+      <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

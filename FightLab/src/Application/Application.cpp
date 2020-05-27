@@ -18,6 +18,9 @@ void Application::Init()
 
 	m_inputManager->Init(m_eventBus, m_mainWindow->window);
 	m_eventBus->subscribe(this, &Application::SetAppState);
+
+	m_renderManager.VulkanContext.window = (m_mainWindow->window);
+	m_renderManager.Initialize();
 }
 
 void Application::Run()
@@ -26,6 +29,7 @@ void Application::Run()
 	while (m_appState != ApplicationState::QUIT)
 	{
 		m_inputManager->ProcessInput();
+		m_renderManager.Draw();
 
 		if (glfwWindowShouldClose(m_mainWindow->window))
 			m_appState = ApplicationState::QUIT;
@@ -36,6 +40,7 @@ void Application::Run()
 
 void Application::CleanUp()
 {
+	m_renderManager.CleanUp();
 	delete m_eventBus;
 	delete m_inputManager;
 	delete m_mainWindow;

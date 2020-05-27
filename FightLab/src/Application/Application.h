@@ -23,6 +23,7 @@ private:
 	Window* m_mainWindow;
 	InputManager* m_inputManager;
 	EventBus* m_eventBus;
+	RenderManager m_renderManager;
 
 	int frames = 0;
 	void limitFrameRate();

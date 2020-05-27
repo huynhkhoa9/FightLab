@@ -40,7 +40,8 @@ project "FightLab"
 		"FightLab/vendors/GLFW/include",
 		"FightLab/vendors/vulkan/Include",
 		"FightLab/vendors/GLM/glm/",
-		"FightLab/vendors/STB"
+		"FightLab/vendors/STB",
+		"FightLab/vendors/VulkanMemoryAllocation/src"
 	}
 
 	links
