@@ -1,6 +1,6 @@
 #include "Core/FightLab.h"
 
-int main(int argc, char* argv)
+int main()
 {
 	State Completed(StateMachineCompletionType::Accepted, true);
 

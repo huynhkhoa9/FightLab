@@ -1,2 +1,4 @@
 C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\bin\Debug-windows-x86_64\FightLab\FightLab.pdb
 C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\bin-int\Debug-windows-x86_64\FightLab\FightLab.pdb
+C:\Users\Khoa\Desktop\FightLab-master\FightLab-master\bin\Debug-windows-x86_64\FightLab\FightLab.pdb
+C:\Users\Khoa\Desktop\FightLab-master\FightLab-master\bin-int\Debug-windows-x86_64\FightLab\FightLab.pdb
