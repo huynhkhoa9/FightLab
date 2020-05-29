@@ -41,8 +41,11 @@ public:
 		GLFWwindow* window;
 
 	} VulkanContext;
+
 private:
+	ResourceManager resourceManager;
 	VkBuffer m_vertexBuffer;
+	VkBuffer m_vertexBuffer2;
 	VmaAllocation m_VertexAllocation;
 	VkBuffer m_indexBuffer;
 	VmaAllocation m_IndexAllocation;
@@ -50,14 +53,19 @@ private:
 	std::vector<VmaAllocation> m_uniformBuffersAllocation{};
 
 	const std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}} 
+		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+		{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 	};
 	
 	const std::vector<uint16_t> indices = {
-		0, 1, 2, 2, 3, 0
+		0, 1, 2, 2, 3, 0,
+		4, 5, 6, 6, 7, 4
 	};
 
 	struct
@@ -95,12 +103,10 @@ private:
 	std::vector<VkCommandBuffer> CommandBuffers;
     
 	VkImage DepthImage;
-    VkDeviceMemory DepthImageMemory;
+    VmaAllocation DepthImageAllocation;
     VkImageView DepthImageView;
 
     uint32_t MipLevels;
-
-    
 
     std::vector<VkSemaphore> ImageAvailableSemaphores;
     std::vector<VkSemaphore> RenderFinishedSemaphores;
@@ -108,6 +114,7 @@ private:
     std::vector<VkFence> ImagesInFlight;
 
 	VmaAllocator MemAllocator;
+
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
 
@@ -329,22 +336,6 @@ private:
 	void createDescriptorPool();
 	void createDescriptorSets();
 
-
-	void updateUniformBuffer(uint32_t imageIndex);
-
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(VulkanContext.physicalDevice, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-
-		throw std::runtime_error("failed to find suitable memory type!");
-	}
-
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
 		VkBuffer& buffer, VmaAllocation& allocation) {
 		VkBufferCreateInfo bufferInfo{};
@@ -359,6 +350,21 @@ private:
 		//allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 		vmaCreateBuffer(MemAllocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
+	}
+
+	void updateUniformBuffer(uint32_t imageIndex);
+
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(VulkanContext.physicalDevice, &memProperties);
+
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		throw std::runtime_error("failed to find suitable memory type!");
 	}
 
 	VkCommandBuffer beginSingleTimeCommands() {

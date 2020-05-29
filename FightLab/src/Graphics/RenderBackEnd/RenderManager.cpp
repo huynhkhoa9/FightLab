@@ -29,9 +29,14 @@ void RenderManager::Initialize()
     createImageViews();
     createRenderPass();
     createDescriptorSetLayout();
-    createGraphicsPipeline();
+    createDepthResources();
     createFramebuffers();
     createCommandPool();
+
+    resourceManager = ResourceManager(VulkanContext.device, MemAllocator, CommandPool, m_graphicsQueue, VulkanContext.physicalDevice);
+    resourceManager.LoadTexture("resources/textures/texture.jpg", "texture");
+
+    createGraphicsPipeline();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -114,6 +119,8 @@ void RenderManager::CleanUp()
 {
     cleanupSwapChain();
 
+   
+
     vkDestroyDescriptorSetLayout(VulkanContext.device, DescriptorSetLayout, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -125,9 +132,10 @@ void RenderManager::CleanUp()
     vkDestroyCommandPool(VulkanContext.device, CommandPool, nullptr);
 
     vkDeviceWaitIdle(VulkanContext.device);
-
+    resourceManager.CleanUp();
     vmaDestroyBuffer(MemAllocator, m_indexBuffer, m_IndexAllocation);
     vmaDestroyBuffer(MemAllocator, m_vertexBuffer, m_VertexAllocation);
+
     vmaDestroyAllocator(MemAllocator);
 
     vkDestroyDevice(VulkanContext.device, nullptr);
@@ -369,10 +377,19 @@ void RenderManager::createDescriptorSetLayout()
     uboLayoutBinding.pImmutableSamplers = nullptr;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
+
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = &uboLayoutBinding;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
 
     if (vkCreateDescriptorSetLayout(VulkanContext.device, &layoutInfo, nullptr, &DescriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
@@ -381,8 +398,8 @@ void RenderManager::createDescriptorSetLayout()
 
 void RenderManager::createGraphicsPipeline()
 {
-    VkShaderModule vertShaderModule = ResourceManager::LoadShader("shaders/vert.spv", VulkanContext.device);;
-    VkShaderModule fragShaderModule = ResourceManager::LoadShader("shaders/frag.spv", VulkanContext.device);
+    VkShaderModule vertShaderModule = resourceManager.LoadShader("shaders/vert.spv");
+    VkShaderModule fragShaderModule = resourceManager.LoadShader("shaders/frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -473,6 +490,18 @@ void RenderManager::createGraphicsPipeline()
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
+    VkPipelineDepthStencilStateCreateInfo depthStencil{};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = 0.0f; // Optional
+    depthStencil.maxDepthBounds = 1.0f; // Optional
+    depthStencil.stencilTestEnable = VK_FALSE;
+    //depthStencil.front{}; // Optional
+    //depthStencil.back{}; // Optional
+
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
@@ -486,6 +515,7 @@ void RenderManager::createGraphicsPipeline()
     pipelineInfo.layout = PipelineLayout;
     pipelineInfo.renderPass = RenderPass;
     pipelineInfo.subpass = 0;
+    pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(VulkanContext.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &Pipelines.spritePipeline) != VK_SUCCESS) {
@@ -498,7 +528,21 @@ void RenderManager::createGraphicsPipeline()
 
 void RenderManager::createRenderPass()
 {
-    VkAttachmentDescription colorAttachment{};
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format = findDepthFormat();
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = SwapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -508,16 +552,18 @@ void RenderManager::createRenderPass()
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    VkAttachmentReference colorAttachmentRef{};
+    VkAttachmentReference colorAttachmentRef = {};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass{};
+    VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-    VkSubpassDependency dependency{};
+
+    VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
     dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -525,10 +571,11 @@ void RenderManager::createRenderPass()
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    VkRenderPassCreateInfo renderPassInfo{};
+    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -606,7 +653,7 @@ void RenderManager::createFramebuffers()
 {
     SwapChainFramebuffers.resize(SwapChainImageViews.size());
     for (size_t i = 0; i < SwapChainImageViews.size(); i++) {
-        std::array<VkImageView, 1> attachments = { SwapChainImageViews[i] };
+        std::array<VkImageView, 2> attachments = { SwapChainImageViews[i], DepthImageView };
 
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -719,11 +766,11 @@ void RenderManager::createSyncObjects() {
 
 void RenderManager::createDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 1> poolSizes{};
+    std::array<VkDescriptorPoolSize, 2> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(SwapChainImages.size());
-    /*poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(SwapChainImages.size());*/
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(SwapChainImages.size());
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -756,16 +803,30 @@ void RenderManager::createDescriptorSets()
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        VkWriteDescriptorSet descriptorWrite{};
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = DescriptorSets[i];
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = resourceManager.GetImageView("texture");
+        imageInfo.sampler = resourceManager.GetImageSampler("texture");
 
-        vkUpdateDescriptorSets(VulkanContext.device, 1, &descriptorWrite, 0, nullptr);
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = DescriptorSets[i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = DescriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(VulkanContext.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 }
 
@@ -793,6 +854,7 @@ void RenderManager::recreateSwapChain()
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createSwapChain();
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();
@@ -803,8 +865,8 @@ void RenderManager::recreateSwapChain()
 void RenderManager::cleanupSwapChain()
 {
     vkDeviceWaitIdle(VulkanContext.device);
-    //vkDestroyImageView(m_logicalDevice, m_depthImageView, nullptr);
-    //vmaDestroyImage(m_MemAllocator, m_depthImage, m_depthImageAllocation);
+    vkDestroyImageView(VulkanContext.device, DepthImageView, nullptr);
+    vmaDestroyImage(MemAllocator, DepthImage, DepthImageAllocation);
     for (auto framebuffer : SwapChainFramebuffers) {
         vkDestroyFramebuffer(VulkanContext.device, framebuffer, nullptr);
     }
@@ -825,6 +887,13 @@ void RenderManager::cleanupSwapChain()
     }
 
     vkDestroyDescriptorPool(VulkanContext.device, DescriptorPool, nullptr);
+}
+
+void RenderManager::createDepthResources()
+{
+    VkFormat depthFormat = findDepthFormat();
+    createImage(SwapChainExtent.width, SwapChainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DepthImage, DepthImageAllocation);
+    DepthImageView = createImageView(DepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 }
 
 
