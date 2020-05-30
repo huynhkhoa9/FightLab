@@ -137,7 +137,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Material.h" />
     <ClInclude Include="src\Application\Application.h" />
     <ClInclude Include="src\Application\Window.h" />
     <ClInclude Include="src\Core\EventSystem\Event.h" />
@@ -146,6 +145,7 @@
     <ClInclude Include="src\FightLabMove\Move.h" />
     <ClInclude Include="src\FightLabMove\MoveLink.h" />
     <ClInclude Include="src\Graphics\Animation\Animation.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\Material\Material.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\Sprite\Sprite.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\Utility.h" />
@@ -159,7 +159,6 @@
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="src\Application\Application.cpp" />
     <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
     <ClCompile Include="src\FightLabMove\Move.cpp" />

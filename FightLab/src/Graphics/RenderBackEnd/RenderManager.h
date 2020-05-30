@@ -11,6 +11,7 @@
 #include <chrono>
 
 #include "ResourceManagement/ResourceManger.h"
+#include "Material/Material.h"
 #include "Utility.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -33,7 +34,12 @@ public:
 	VkContext VulkanContext;
 
 private:
-
+	Material material1;
+	Material material2;
+	Material material3;
+	float timer = 0;
+	std::array<Material, 3> mats{material1, material2, material3};
+	
 	ResourceManager resourceManager;
 	VkBuffer m_vertexBuffer;
 	VkBuffer m_vertexBuffer2;
@@ -45,18 +51,21 @@ private:
 
 	const std::vector<Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
 		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
 	};
 	
 	const std::vector<uint16_t> indices = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
+		0, 1, 2, 2, 3, 0
+	};
+
+	std::vector<FrameInfo> framedata = {
+		{{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}},
+		{{0.9f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+		{{0.7f, 1.0f, 1.0f}, {2.0f, 0.0f, 0.0f}},
+		{{0.6f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+		{{0.9f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}}
 	};
 
 	struct
@@ -325,7 +334,7 @@ private:
 	void createCommandBuffers();
 	void createSyncObjects();
 	void createDescriptorPool();
-	void createDescriptorSets();
+	void createDescriptorSets(Material& material,const VkImageView& imageView,const VkSampler& sampler);
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
 		VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage memUsage) {

@@ -10,6 +10,7 @@
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+#include <gtx/transform.hpp>
 #include <gtx/hash.hpp>
 
 #include"GLFW/glfw3.h"

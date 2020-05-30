@@ -49,7 +49,14 @@ struct UniformBufferObject {
 	glm::mat4 proj;
 };
 
+struct SpriteAnimBufferObject
+{
+    glm::vec2 offset;
+    glm::vec2 scale;
+};
+
 struct FrameInfo
 {
-
+    glm::vec3 scale = glm::vec3(0);
+    glm::vec3 offset = glm::vec3(0);
 };

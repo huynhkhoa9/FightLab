@@ -35,7 +35,10 @@ void RenderManager::Initialize()
     createCommandPool();
 
     resourceManager = ResourceManager(VulkanContext, MemAllocator, CommandPool, m_graphicsQueue);
+    resourceManager.LoadTexture("resources/textures/animation.png", "animation");
+    resourceManager.LoadTexture("resources/textures/wall.jpg", "wall");
     resourceManager.LoadTexture("resources/textures/texture.jpg", "texture");
+
     resourceManager.LoadShader("shaders/vert.spv", "default_vertshader");
     resourceManager.LoadShader("shaders/frag.spv", "default_fragshader");
 
@@ -44,7 +47,9 @@ void RenderManager::Initialize()
     createIndexBuffer();
     createUniformBuffers();
     createDescriptorPool();
-    createDescriptorSets();
+    createDescriptorSets(material1, resourceManager.GetImageView("animation"), resourceManager.GetImageSampler("animation"));
+    createDescriptorSets(material2, resourceManager.GetImageView("wall"), resourceManager.GetImageSampler("wall"));
+    createDescriptorSets(material3, resourceManager.GetImageView("texture"), resourceManager.GetImageSampler("texture"));
     createCommandBuffers();
     createSyncObjects();
 }
@@ -121,8 +126,6 @@ void RenderManager::Draw()
 void RenderManager::CleanUp()
 {
     cleanupSwapChain();
-
-   
 
     vkDestroyDescriptorSetLayout(VulkanContext.device, DescriptorSetLayout, nullptr);
 
@@ -731,10 +734,10 @@ void RenderManager::createCommandBuffers()
 
         vkCmdBindIndexBuffer(CommandBuffers[i], m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-        vkCmdBindDescriptorSets(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayout, 0, 1, &DescriptorSets[i], 0, nullptr);
+        vkCmdBindDescriptorSets(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayout, 0, 1, &material1.descriptorSet, 0, nullptr);
 
-        vkCmdDrawIndexed(CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
+        vkCmdDrawIndexed(CommandBuffers[i], 6, 1, 0, 0, 0);
+        
         vkCmdEndRenderPass(CommandBuffers[i]);
 
         if (vkEndCommandBuffer(CommandBuffers[i]) != VK_SUCCESS) {
@@ -769,50 +772,50 @@ void RenderManager::createDescriptorPool()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(SwapChainImages.size());
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(mats.size());
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(SwapChainImages.size());
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(mats.size());
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(SwapChainImages.size());
+    poolInfo.maxSets = static_cast<uint32_t>(mats.size()); //static_cast<uint32_t>(SwapChainImages.size());
 
     if (vkCreateDescriptorPool(VulkanContext.device, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
     }
 }
 
-void RenderManager::createDescriptorSets()
+void RenderManager::createDescriptorSets(Material& material,const VkImageView& imageView,const VkSampler& sampler )
 {
     std::vector<VkDescriptorSetLayout> layouts(SwapChainImages.size(), DescriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = DescriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(SwapChainImages.size());
+    allocInfo.descriptorSetCount = 1; //static_cast<uint32_t>(SwapChainImages.size());
     allocInfo.pSetLayouts = layouts.data();
 
-    DescriptorSets.resize(SwapChainImages.size());
-    if (vkAllocateDescriptorSets(VulkanContext.device, &allocInfo, DescriptorSets.data()) != VK_SUCCESS) {
+    //material.descriptorSet.resize(SwapChainImages.size());
+    if (vkAllocateDescriptorSets(VulkanContext.device, &allocInfo, &material.descriptorSet) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < SwapChainImages.size(); i++) {
+    //for (size_t i = 0; i < SwapChainImages.size(); i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_uniformBuffers[i];
+        bufferInfo.buffer = m_uniformBuffers[0];
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = resourceManager.GetImageView("texture");
-        imageInfo.sampler = resourceManager.GetImageSampler("texture");
+        imageInfo.imageView = imageView;
+        imageInfo.sampler = sampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = DescriptorSets[i];
+        descriptorWrites[0].dstSet = material.descriptorSet;
         descriptorWrites[0].dstBinding = 0;
         descriptorWrites[0].dstArrayElement = 0;
         descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -820,7 +823,7 @@ void RenderManager::createDescriptorSets()
         descriptorWrites[0].pBufferInfo = &bufferInfo;
 
         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = DescriptorSets[i];
+        descriptorWrites[1].dstSet = material.descriptorSet;
         descriptorWrites[1].dstBinding = 1;
         descriptorWrites[1].dstArrayElement = 0;
         descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -828,16 +831,21 @@ void RenderManager::createDescriptorSets()
         descriptorWrites[1].pImageInfo = &imageInfo;
 
         vkUpdateDescriptorSets(VulkanContext.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
+   //}
 }
 
 void RenderManager::updateUniformBuffer(uint32_t imageIndex)
 {
     UniformBufferObject ubo{};
-    ubo.model = glm::mat4(1);
+    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1), framedata[(int)timer % 5].scale);
+    glm::mat4 positionMatrix = glm::translate(glm::mat4(1), framedata[(int)timer % 5].offset);
+    glm::mat4 rotationMatrix = glm::mat4(1);
+    ubo.model = positionMatrix * scaleMatrix ;
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 1000000.0f);
     ubo.proj[1][1] *= -1;
+
+    timer += 0.25f;
 
     void* mappedData;
     vmaMapMemory(MemAllocator, m_uniformBuffersAllocation[currentFrame], &mappedData);
@@ -859,7 +867,8 @@ void RenderManager::recreateSwapChain()
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();
-    createDescriptorSets();
+    createDescriptorSets(material1, resourceManager.GetImageView("texture"), resourceManager.GetImageSampler("texture"));
+    createDescriptorSets(material2, resourceManager.GetImageView("wall"), resourceManager.GetImageSampler("wall"));
     createCommandBuffers();
 }
 

@@ -73,7 +73,7 @@ private:
 	VkQueue graphicsQueue;
 	VmaAllocator memAllocator;
 
-	VmaAllocation textureAllocation;
+	std::vector<VmaAllocation> textureAllocations;
 	
 	//Create an Image for the loaded texture
 	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling,

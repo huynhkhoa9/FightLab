@@ -63,7 +63,7 @@ void ResourceManager::CleanUp()
 		{
 			vkDestroySampler(context.device, ImageSamplerLibrary[i], nullptr);
 			vkDestroyImageView(context.device, TextureImageViewLibrary[i], nullptr);
-			vmaDestroyImage(memAllocator, TextureImageLibrary[i], textureAllocation);
+			vmaDestroyImage(memAllocator, TextureImageLibrary[i], textureAllocations[i]);
 		}
 	}
 }
@@ -118,9 +118,10 @@ VkImage ResourceManager::createTexture(const std::string& fileName, const std::s
 
 	stbi_image_free(pixels);
 	VkImage textureImage;
+	VmaAllocation txtAllocation;
 	createImage(texWidth, texHeight, mipLevels, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureAllocation);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, txtAllocation);
 
 	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
@@ -128,6 +129,7 @@ VkImage ResourceManager::createTexture(const std::string& fileName, const std::s
 	generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 	TextureImageIDMap.insert(std::make_pair(textureName, (uint32_t)TextureImageLibrary.size()));
 	TextureImageLibrary.push_back(textureImage);
+	textureAllocations.push_back(txtAllocation);
 
 	vmaDestroyBuffer(memAllocator, stagingBuffer, staging);
 	return textureImage;
