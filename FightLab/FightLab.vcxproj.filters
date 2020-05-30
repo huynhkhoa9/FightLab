@@ -34,6 +34,9 @@
     <Filter Include="StateMachine">
       <UniqueIdentifier>{BB54AC3C-A7B7-3BE1-503D-74973C7F0764}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics\RenderBackEnd\Material">
+      <UniqueIdentifier>{e8764d6e-03ea-4d68-abff-956af818a121}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application\Application.h">
@@ -66,9 +69,6 @@
     <ClInclude Include="src\Graphics\RenderBackEnd\Sprite\Sprite.h">
       <Filter>Graphics\RenderBackEnd\Sprite</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\RenderBackEnd\Vertex.h">
-      <Filter>Graphics\RenderBackEnd</Filter>
-    </ClInclude>
     <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h">
       <Filter>Graphics\RenderBackEnd</Filter>
     </ClInclude>
@@ -91,6 +91,12 @@
       <Filter>StateMachine</Filter>
     </ClInclude>
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\Utility.h">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Graphics\RenderBackEnd\Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application\Application.cpp">
@@ -124,5 +130,8 @@
       <Filter>StateMachine</Filter>
     </ClCompile>
     <ClCompile Include="src\pch.cpp" />
+    <ClCompile Include="Material.cpp">
+      <Filter>Graphics\RenderBackEnd\Material</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

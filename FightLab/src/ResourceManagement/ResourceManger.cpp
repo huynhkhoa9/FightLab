@@ -4,8 +4,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <iterator>
 
-VkShaderModule ResourceManager::LoadShader(const std::string& filename)
+VkShaderModule ResourceManager::LoadShader(const std::string& filename, const std::string& shaderName)
 {
 	auto shaderFile = readFile(filename);
 	VkShaderModule shaderModule;
@@ -14,10 +15,12 @@ VkShaderModule ResourceManager::LoadShader(const std::string& filename)
 	createInfo.codeSize = shaderFile.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderFile.data());
 	
-	if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+	if (vkCreateShaderModule(context.device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create shader module!");
 	}
 
+	ShaderModulesIDMap[shaderName] = ShaderModulesLibrary.size();
+	ShaderModulesLibrary.push_back(shaderModule);
 	return shaderModule;
 }
 
@@ -31,7 +34,7 @@ void ResourceManager::LoadTexture(const std::string& filename, const std::string
 
 VkShaderModule ResourceManager::GetShader(const std::string& shaderName)
 {
-	return VkShaderModule();
+	return ShaderModulesLibrary[ShaderModulesIDMap[shaderName]];
 }
 
 VkSampler ResourceManager::GetImageSampler(const std::string& textureName)
@@ -46,12 +49,20 @@ VkImageView ResourceManager::GetImageView(const std::string& imageViewName)
 
 void ResourceManager::CleanUp()
 {
+	if (ShaderModulesLibrary.size() > 0)
+	{
+		for (int i = 0; i < ShaderModulesLibrary.size(); i++)
+		{
+			vkDestroyShaderModule(context.device, ShaderModulesLibrary[i], nullptr);
+		}
+	}
+
 	if (ImageSamplerLibrary.size() > 0)
 	{
 		for (int i = 0; i < ImageSamplerLibrary.size(); i++)
 		{
-			vkDestroySampler(logicalDevice, ImageSamplerLibrary[i], nullptr);
-			vkDestroyImageView(logicalDevice, TextureImageViewLibrary[i], nullptr);
+			vkDestroySampler(context.device, ImageSamplerLibrary[i], nullptr);
+			vkDestroyImageView(context.device, TextureImageViewLibrary[i], nullptr);
 			vmaDestroyImage(memAllocator, TextureImageLibrary[i], textureAllocation);
 		}
 	}
@@ -136,7 +147,7 @@ void ResourceManager::CreateImageView(const std::string name, VkImage image, VkF
 	viewInfo.subresourceRange.layerCount = 1;
 
 	VkImageView imageView;
-	if (vkCreateImageView(logicalDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+	if (vkCreateImageView(context.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view!");
 	}
 
@@ -168,7 +179,7 @@ void ResourceManager::CreateSampler(const std::string name, int mipLevels)
 	samplerInfo.maxLod = static_cast<float>(mipLevels);
 	samplerInfo.mipLodBias = 0.0f; // Optional
 
-	if (vkCreateSampler(logicalDevice, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+	if (vkCreateSampler(context.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 
@@ -180,7 +191,7 @@ void ResourceManager::generateMipmaps(VkImage image, VkFormat imageFormat, int32
 {
 	// Check if image format supports linear blitting
 	VkFormatProperties formatProperties;
-	vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+	vkGetPhysicalDeviceFormatProperties(context.physicalDevice, imageFormat, &formatProperties);
 
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format does not support linear blitting!");

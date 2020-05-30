@@ -11,9 +11,11 @@
 #include <chrono>
 
 #include "ResourceManagement/ResourceManger.h"
-#include "Vertex.h"
+#include "Utility.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
+
+
 
 class RenderManager
 {
@@ -28,21 +30,10 @@ public:
 
 	void CleanUp();
 	
-	struct
-	{
-		VkInstance instance;
-		VkSurfaceKHR surface;
-
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-		VkDevice device;
-
-		bool framebufferResized = false;
-
-		GLFWwindow* window;
-
-	} VulkanContext;
+	VkContext VulkanContext;
 
 private:
+
 	ResourceManager resourceManager;
 	VkBuffer m_vertexBuffer;
 	VkBuffer m_vertexBuffer2;
@@ -70,7 +61,7 @@ private:
 
 	struct
 	{
-		//VkPipeline wireframePipeline;
+		VkPipeline wireframePipeline;
 		VkPipeline spritePipeline;
 	} Pipelines;
     
@@ -337,7 +328,7 @@ private:
 	void createDescriptorSets();
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
-		VkBuffer& buffer, VmaAllocation& allocation) {
+		VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage memUsage) {
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = size;
@@ -346,6 +337,7 @@ private:
 
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.requiredFlags = requiredProperties;
+		allocInfo.usage = memUsage;
 		//allocInfo.preferredFlags = preferredProperties;
 		//allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 

@@ -1,29 +1,48 @@
 #pragma once
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
+
+struct VkContext
+{
+	VkInstance instance;
+	VkSurfaceKHR surface;
+
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkDevice device;
+
+	bool framebufferResized = false;
+
+	GLFWwindow* window;
+};
+
+struct ModelContext
+{
+	uint32_t indexOffset = 0;
+	uint32_t vertexCount = 0;
+};
+
 class ResourceManager
 {
 public:
-	std::map<const std::string, uint32_t> ShaderModulesLibrary;
+	std::map<const std::string, uint32_t> ShaderModulesIDMap;
 	std::map<const std::string, uint32_t> ImageSamplerIDMap;
 	std::map<const std::string, uint32_t> TextureImageIDMap;
 	std::map<const std::string, uint32_t> TextureImageViewIDMap;
 
+	std::vector<VkShaderModule> ShaderModulesLibrary;
 	std::vector<VkImage> TextureImageLibrary;
 	std::vector<VkImageView> TextureImageViewLibrary;
 	std::vector<VkSampler> ImageSamplerLibrary;
 
-	ResourceManager(const VkDevice& device, const VmaAllocator& allocator, const VkCommandPool& cmdPool, const VkQueue& gfxQueue, const VkPhysicalDevice& pDevice) {
-		logicalDevice = device;
-		physicalDevice = pDevice;
+	ResourceManager(const VkContext& cntxt, const VmaAllocator& allocator, const VkCommandPool& cmdPool, const VkQueue& gfxQueue) {
+		context = cntxt;
 		memAllocator = allocator;
 		graphicsQueue = gfxQueue;
 		commandPool = cmdPool;
 	}
 	ResourceManager(const ResourceManager& r)
 	{
-		logicalDevice = r.logicalDevice;
-		physicalDevice = r.physicalDevice;
+		context = r.context;
 		memAllocator = r.memAllocator;
 		graphicsQueue = r.graphicsQueue;
 		commandPool = r.commandPool;
@@ -32,7 +51,7 @@ public:
 	~ResourceManager() {}
 
 	//Load shader from file
-	VkShaderModule LoadShader(const std::string& filename);
+	VkShaderModule LoadShader(const std::string& filename, const std::string& shaderName);
 
 	//Load Texture from file
 	void LoadTexture(const std::string& filename, const std::string& textureName);
@@ -49,8 +68,7 @@ public:
 	//Clean Up resources
 	void CleanUp();
 private:
-	VkDevice logicalDevice;
-	VkPhysicalDevice physicalDevice;
+	VkContext context;
 	VkCommandPool commandPool;
 	VkQueue graphicsQueue;
 	VmaAllocator memAllocator;
@@ -116,7 +134,7 @@ private:
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(logicalDevice, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(context.device, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -138,7 +156,7 @@ private:
 		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(graphicsQueue);
 
-		vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(context.device, commandPool, 1, &commandBuffer);
 	}
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {

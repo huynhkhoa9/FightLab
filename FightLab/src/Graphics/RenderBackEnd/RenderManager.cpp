@@ -22,6 +22,7 @@ void RenderManager::Initialize()
     allocatorInfo.physicalDevice = VulkanContext.physicalDevice;
     allocatorInfo.device = VulkanContext.device;
     allocatorInfo.instance = VulkanContext.instance;
+    allocatorInfo.preferredLargeHeapBlockSize = 0;
 
     vmaCreateAllocator(&allocatorInfo, &MemAllocator);
 
@@ -33,8 +34,10 @@ void RenderManager::Initialize()
     createFramebuffers();
     createCommandPool();
 
-    resourceManager = ResourceManager(VulkanContext.device, MemAllocator, CommandPool, m_graphicsQueue, VulkanContext.physicalDevice);
+    resourceManager = ResourceManager(VulkanContext, MemAllocator, CommandPool, m_graphicsQueue);
     resourceManager.LoadTexture("resources/textures/texture.jpg", "texture");
+    resourceManager.LoadShader("shaders/vert.spv", "default_vertshader");
+    resourceManager.LoadShader("shaders/frag.spv", "default_fragshader");
 
     createGraphicsPipeline();
     createVertexBuffer();
@@ -398,8 +401,8 @@ void RenderManager::createDescriptorSetLayout()
 
 void RenderManager::createGraphicsPipeline()
 {
-    VkShaderModule vertShaderModule = resourceManager.LoadShader("shaders/vert.spv");
-    VkShaderModule fragShaderModule = resourceManager.LoadShader("shaders/frag.spv");
+    VkShaderModule vertShaderModule = resourceManager.GetShader("default_vertshader");
+    VkShaderModule fragShaderModule = resourceManager.GetShader("default_fragshader");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -522,8 +525,6 @@ void RenderManager::createGraphicsPipeline()
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    vkDestroyShaderModule(VulkanContext.device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(VulkanContext.device, vertShaderModule, nullptr);
 }
 
 void RenderManager::createRenderPass()
@@ -594,7 +595,7 @@ void RenderManager::createVertexBuffer()
     VmaAllocation staging;
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        stagingBuffer, staging);
+        stagingBuffer, staging, VMA_MEMORY_USAGE_CPU_ONLY);
 
     void* mappedData;
     vmaMapMemory(MemAllocator, staging, &mappedData);
@@ -603,7 +604,7 @@ void RenderManager::createVertexBuffer()
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        m_vertexBuffer, m_VertexAllocation);
+        m_vertexBuffer, m_VertexAllocation, VMA_MEMORY_USAGE_GPU_ONLY);
 
     copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
 
@@ -618,7 +619,7 @@ void RenderManager::createIndexBuffer()
     VmaAllocation staging;
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        stagingBuffer, staging);
+        stagingBuffer, staging, VMA_MEMORY_USAGE_CPU_ONLY);
 
     void* mappedData;
     vmaMapMemory(MemAllocator, staging, &mappedData);
@@ -627,7 +628,7 @@ void RenderManager::createIndexBuffer()
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        m_indexBuffer, m_IndexAllocation);
+        m_indexBuffer, m_IndexAllocation, VMA_MEMORY_USAGE_GPU_ONLY);
 
     copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
 
@@ -645,7 +646,7 @@ void RenderManager::createUniformBuffers()
         createBuffer(bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            m_uniformBuffers[i], m_uniformBuffersAllocation[i]);
+            m_uniformBuffers[i], m_uniformBuffersAllocation[i], VMA_MEMORY_USAGE_CPU_TO_GPU);
     }
 }
 
