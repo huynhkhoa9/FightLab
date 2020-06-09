@@ -1,5 +1,6 @@
 #ifndef PCH_H
 #define PCH_H
+
 #include <random>
 #include <vector>
 #include <array>
@@ -11,7 +12,9 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtx/transform.hpp>
+#include <gtx/quaternion.hpp>
 #include <gtx/hash.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include"GLFW/glfw3.h"
 #include "vulkan/vulkan.h"
@@ -31,6 +34,15 @@
 #include <optional>
 
 #include "Core/EventSystem/EventSystem.h"
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
+const int MAX_JOINT_PER_VERTEX = 1;
+const int MAX_POPULATION = 1024;
+const int MAX_JOINTS = 64;
+
 #endif
-#define MAX_POPULATION 1024
+
+
 //MAX_FRAMES_IN_FLIGHT = 2;

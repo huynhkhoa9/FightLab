@@ -1,7 +1,8 @@
 #pragma once
 #include "MoveLink.h"
 #include "StateMachine/FightLabSM.h"
-#include "Graphics/Animation/Animation.h"
+#include "ResourceManagement/SkinnedMesh/Animator/Animation.h"
+
 
 class MoveLink;
 

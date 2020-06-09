@@ -2,6 +2,8 @@
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
 
+#include "ResourceManagement/SkinnedMesh/Geometries/SkinnedMesh.h"
+#include "Utility.h"
 struct VkContext
 {
 	VkInstance instance;
@@ -28,11 +30,19 @@ public:
 	std::map<const std::string, uint32_t> ImageSamplerIDMap;
 	std::map<const std::string, uint32_t> TextureImageIDMap;
 	std::map<const std::string, uint32_t> TextureImageViewIDMap;
+	std::map<const std::string, uint32_t> ModelIDMap;
+	std::map<const std::string, uint32_t> MeshIDMap;
 
+	//Shader
 	std::vector<VkShaderModule> ShaderModulesLibrary;
+
+	//Texture, Texure ImageView, and Sampler
 	std::vector<VkImage> TextureImageLibrary;
 	std::vector<VkImageView> TextureImageViewLibrary;
 	std::vector<VkSampler> ImageSamplerLibrary;
+	std::vector<SkinnedMesh> meshes;
+	//SkinnedMesh and Animation
+
 
 	ResourceManager(const VkContext& cntxt, const VmaAllocator& allocator, const VkCommandPool& cmdPool, const VkQueue& gfxQueue) {
 		context = cntxt;
@@ -47,7 +57,9 @@ public:
 		graphicsQueue = r.graphicsQueue;
 		commandPool = r.commandPool;
 	}
-	ResourceManager() {}
+	ResourceManager() 
+	{
+	}
 	~ResourceManager() {}
 
 	//Load shader from file
@@ -55,6 +67,9 @@ public:
 
 	//Load Texture from file
 	void LoadTexture(const std::string& filename, const std::string& textureName);
+
+	//Load Skinned Mesh
+	bool LoadSkinnedMesh(const std::string& path, const std::string& skinnedMeshName);
 
 	//Get shader
 	VkShaderModule GetShader(const std::string& shaderName);
@@ -72,9 +87,9 @@ private:
 	VkCommandPool commandPool;
 	VkQueue graphicsQueue;
 	VmaAllocator memAllocator;
-
+	std::string skinnedMeshDirectory;
 	std::vector<VmaAllocation> textureAllocations;
-	
+
 	//Create an Image for the loaded texture
 	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling,
 		VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
@@ -249,5 +264,8 @@ private:
 	}
 	
 	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
+	
+	void processNode(aiNode* node, const aiScene* scene, const std::string& skinnedMeshName);
+	SkinnedMesh processMesh(aiMesh* mesh, const aiScene* scene, const std::string& skinnedMeshName);
 };
 #endif

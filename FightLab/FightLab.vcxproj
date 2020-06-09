@@ -76,10 +76,11 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\Assimp\include;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/MTd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -87,21 +88,25 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;vendors\Assimp\lib\Debug\assimp-vc142-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>IF EXIST vendors\Assimp\bin\Debug\assimp-vc142-mtd.dll\ (xcopy /Q /E /Y /I vendors\Assimp\bin\Debug\assimp-vc142-mtd.dll ..\bin\Debug-windows-x86_64\Client &gt; nul) ELSE (xcopy /Q /Y /I vendors\Assimp\bin\Debug\assimp-vc142-mtd.dll ..\bin\Debug-windows-x86_64\Client &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\Assimp\include;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -110,21 +115,25 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;vendors\Assimp\lib\Release\assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>IF EXIST vendors\Assimp\bin\Release\assimp-vc142-mt.dll\ (xcopy /Q /E /Y /I vendors\Assimp\bin\Release\assimp-vc142-mt.dll ..\bin\Release-windows-x86_64\Client &gt; nul) ELSE (xcopy /Q /Y /I vendors\Assimp\bin\Release\assimp-vc142-mt.dll ..\bin\Release-windows-x86_64\Client &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;PC_BUILD_STATIC;PC_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendors\GLFW\include;vendors\vulkan\Include;vendors\GLM\glm;vendors\STB;vendors\Assimp\include;vendors\VulkanMemoryAllocation\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -133,8 +142,11 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vendors\vulkan\Lib\vulkan-1.lib;vendors\Assimp\lib\MinSizeRel\assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>IF EXIST vendors\Assimp\bin\MinSizeRel\assimp-vc142-mtd.dll\ (xcopy /Q /E /Y /I vendors\Assimp\bin\MinSizeRel\assimp-vc142-mtd.dll ..\bin\Dist-windows-x86_64\Client &gt; nul) ELSE (xcopy /Q /Y /I vendors\Assimp\bin\MinSizeRel\assimp-vc142-mtd.dll ..\bin\Dist-windows-x86_64\Client &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Application\Application.h" />
@@ -144,29 +156,33 @@
     <ClInclude Include="src\Core\FightLab.h" />
     <ClInclude Include="src\FightLabMove\Move.h" />
     <ClInclude Include="src\FightLabMove\MoveLink.h" />
-    <ClInclude Include="src\Graphics\Animation\Animation.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\Material\Material.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\Sprite\Sprite.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\Utility.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h" />
     <ClInclude Include="src\Input\FightLab_Input.h" />
     <ClInclude Include="src\Input\InputManager.h" />
+    <ClInclude Include="src\ResourceManagement\Material\Material.h" />
     <ClInclude Include="src\ResourceManagement\ResourceManger.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Animation.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Joint.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Skeleton.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\Vertex.h" />
+    <ClInclude Include="src\ResourceManagement\Sprite\Sprite.h" />
     <ClInclude Include="src\StateMachine\FightLabSM.h" />
     <ClInclude Include="src\StateMachine\GamePadInputAtom.h" />
     <ClInclude Include="src\StateMachine\State.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application\Application.cpp" />
     <ClCompile Include="src\Core\EventSystem\EventSystem.cpp" />
     <ClCompile Include="src\FightLabMove\Move.cpp" />
     <ClCompile Include="src\FightLabMove\MoveLink.cpp" />
-    <ClCompile Include="src\Graphics\Animation\Animation.cpp" />
     <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\ResourceManagement\ResourceManger.cpp" />
+    <ClCompile Include="src\ResourceManagement\SkinnedMesh\Animator\Skeleton.cpp" />
     <ClCompile Include="src\StateMachine\FightLabSM.cpp" />
     <ClCompile Include="src\StateMachine\State.cpp" />
     <ClCompile Include="src\pch.cpp" />

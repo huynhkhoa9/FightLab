@@ -11,8 +11,6 @@
 #include <chrono>
 
 #include "ResourceManagement/ResourceManger.h"
-#include "Material/Material.h"
-#include "Utility.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
@@ -34,11 +32,6 @@ public:
 	VkContext VulkanContext;
 
 private:
-	Material material1;
-	Material material2;
-	Material material3;
-	float timer = 0;
-	std::array<Material, 3> mats{material1, material2, material3};
 	
 	ResourceManager resourceManager;
 	VkBuffer m_vertexBuffer;
@@ -49,24 +42,8 @@ private:
 	std::vector<VkBuffer> m_uniformBuffers{ VK_NULL_HANDLE };
 	std::vector<VmaAllocation> m_uniformBuffersAllocation{};
 
-	const std::vector<Vertex> vertices = {
-		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-	};
-	
-	const std::vector<uint16_t> indices = {
-		0, 1, 2, 2, 3, 0
-	};
-
-	std::vector<FrameInfo> framedata = {
-		{{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}},
-		{{0.9f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-		{{0.7f, 1.0f, 1.0f}, {2.0f, 0.0f, 0.0f}},
-		{{0.6f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-		{{0.9f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}}
-	};
+	std::vector<VkBuffer> m_animuniformBuffers{ VK_NULL_HANDLE };
+	std::vector<VmaAllocation> m_animuniformBuffersAllocation{};
 
 	struct
 	{
