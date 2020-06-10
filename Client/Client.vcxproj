@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\STB;..\FightLab\vendors\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\tinyglTF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -95,7 +95,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PC_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\STB;..\FightLab\vendors\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\tinyglTF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -115,7 +115,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PC_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\STB;..\FightLab\vendors\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FightLab\src;..\FightLab\vendors\GLFW\include;..\FightLab\vendors\vulkan\Include;..\FightLab\vendors\GLM\glm;..\FightLab\vendors\tinyglTF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

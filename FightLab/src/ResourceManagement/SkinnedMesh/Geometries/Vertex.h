@@ -6,8 +6,8 @@ struct SkinnedVertex {
     glm::vec3 color;
     glm::vec3 normal;
     glm::vec2 texCoord;
-    glm::vec4 boneWeights;
-    glm::ivec4 boneIDs;
+    glm::vec4 jointWeights;
+    glm::ivec4 jointIndices;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -44,12 +44,12 @@ struct SkinnedVertex {
         attributeDescriptions[4].binding = 0;
         attributeDescriptions[4].location = 4;
         attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        attributeDescriptions[4].offset = offsetof(SkinnedVertex, boneWeights);
+        attributeDescriptions[4].offset = offsetof(SkinnedVertex, jointWeights);
 
         attributeDescriptions[5].binding = 0;
         attributeDescriptions[5].location = 5;
         attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SINT;
-        attributeDescriptions[5].offset = offsetof(SkinnedVertex, boneIDs);
+        attributeDescriptions[5].offset = offsetof(SkinnedVertex, jointIndices);
 
         return attributeDescriptions;
     }

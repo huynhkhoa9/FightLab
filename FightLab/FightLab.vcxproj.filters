@@ -87,17 +87,8 @@
     <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Animation.h">
       <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
     </ClInclude>
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Joint.h">
-      <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
-    </ClInclude>
     <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Skeleton.h">
       <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.h">
-      <Filter>ResourceManagement\SkinnedMesh\Geometries</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\Vertex.h">
-      <Filter>ResourceManagement\SkinnedMesh\Geometries</Filter>
     </ClInclude>
     <ClInclude Include="src\ResourceManagement\Sprite\Sprite.h">
       <Filter>ResourceManagement\Sprite</Filter>
@@ -111,8 +102,10 @@
     <ClInclude Include="src\StateMachine\State.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
-    <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Utility.h" />
+    <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.h" />
+    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application\Application.cpp">
@@ -146,5 +139,6 @@
       <Filter>StateMachine</Filter>
     </ClCompile>
     <ClCompile Include="src\pch.cpp" />
+    <ClCompile Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.cpp" />
   </ItemGroup>
 </Project>

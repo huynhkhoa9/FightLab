@@ -32,6 +32,8 @@ public:
 	std::map<const std::string, uint32_t> TextureImageViewIDMap;
 	std::map<const std::string, uint32_t> ModelIDMap;
 	std::map<const std::string, uint32_t> MeshIDMap;
+	std::vector<SkinnedVertex> verticesBuffer;
+	std::vector<uint32_t> indicesBuffer;
 
 	//Shader
 	std::vector<VkShaderModule> ShaderModulesLibrary;
@@ -80,6 +82,9 @@ public:
 	//Get ImageView
 	VkImageView GetImageView(const std::string& imageViewName);
 
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
+		VkBuffer& buffer, VmaAllocation& allocation);
+
 	//Clean Up resources
 	void CleanUp();
 private:
@@ -123,22 +128,6 @@ private:
 
 			return buffer;
 		}
-	}
-
-	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
-		VkBuffer& buffer, VmaAllocation& allocation) {
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocInfo = {};
-		allocInfo.requiredFlags = requiredProperties;
-		//allocInfo.preferredFlags = preferredProperties;
-		//allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		vmaCreateBuffer(memAllocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
 	}
 
 	VkCommandBuffer beginSingleTimeCommands() {
@@ -265,7 +254,6 @@ private:
 	
 	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 	
-	void processNode(aiNode* node, const aiScene* scene, const std::string& skinnedMeshName);
-	SkinnedMesh processMesh(aiMesh* mesh, const aiScene* scene, const std::string& skinnedMeshName);
+	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, Node* parent);
 };
 #endif

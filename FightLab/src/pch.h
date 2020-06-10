@@ -24,6 +24,8 @@
 //#define VMA_VULKAN_VERSION 1000000 // Vulkan 1.0
 #include "Graphics/RenderBackEnd/vk_mem_alloc.h"
 
+#include "tiny_gltf.h"
+
 #include <cstdint>
 #include <bitset>
 #include <stdint.h>
@@ -34,9 +36,6 @@
 #include <optional>
 
 #include "Core/EventSystem/EventSystem.h"
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
 
 const int MAX_JOINT_PER_VERTEX = 1;
 const int MAX_POPULATION = 1024;

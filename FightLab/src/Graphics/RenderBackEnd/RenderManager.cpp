@@ -40,7 +40,7 @@ void RenderManager::Initialize()
     resourceManager.LoadShader("shaders/frag.spv", "default_fragshader");
     
     //load models
-    resourceManager.LoadSkinnedMesh("resources/models/FightLabDummy/Dummy.fbx", "Dummy");
+    resourceManager.LoadSkinnedMesh("resources/models/FightLabDummy/Dummy.glb", "Dummy");
     //create Pipelines
     createGraphicsPipeline();
     
@@ -53,7 +53,8 @@ void RenderManager::Initialize()
     //Create materials
     for (auto& mesh : resourceManager.MeshIDMap)
     {
-        createDescriptorSets(resourceManager.meshes[mesh.second].material, resourceManager.GetImageView(mesh.first), resourceManager.GetImageSampler(mesh.first));
+        std::cout << mesh.second;
+        createDescriptorSets(resourceManager.meshes[mesh.second].materials[0], resourceManager.GetImageView(mesh.first), resourceManager.GetImageSampler(mesh.first));
     }
     
     //creating command buffers and synchronations barriers
@@ -598,12 +599,8 @@ void RenderManager::createRenderPass()
 
 void RenderManager::createVertexBuffer()
 {
-    VkDeviceSize bufferSize = 0; 
-    for (uint32_t m = 0; m < resourceManager.meshes.size(); m++)
-    {
-       bufferSize += sizeof(resourceManager.meshes[m].vertices[0])* resourceManager.meshes[m].vertices.size();
-    }
-
+    VkDeviceSize bufferSize = sizeof(resourceManager.verticesBuffer[0])* resourceManager.verticesBuffer.size();
+  
     if (bufferSize == 0)
         return;
 
@@ -615,7 +612,7 @@ void RenderManager::createVertexBuffer()
 
     void* mappedData;
     vmaMapMemory(MemAllocator, staging, &mappedData);
-    memcpy(mappedData, resourceManager.meshes[0].vertices.data(), (size_t)bufferSize);
+    memcpy(mappedData, resourceManager.verticesBuffer.data(), (size_t)bufferSize);
     vmaUnmapMemory(MemAllocator, staging);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -629,11 +626,7 @@ void RenderManager::createVertexBuffer()
 
 void RenderManager::createIndexBuffer()
 {
-    VkDeviceSize bufferSize = 0;
-    for (uint32_t m = 0; m < resourceManager.meshes.size(); m++)
-    {
-        bufferSize += sizeof(resourceManager.meshes[m].indices[0]) * resourceManager.meshes[m].indices.size();
-    }
+    VkDeviceSize bufferSize = sizeof(resourceManager.indicesBuffer[0]) * resourceManager.indicesBuffer.size();
 
     if (bufferSize == 0)
         return;
@@ -646,7 +639,7 @@ void RenderManager::createIndexBuffer()
 
     void* mappedData;
     vmaMapMemory(MemAllocator, staging, &mappedData);
-    memcpy(mappedData, resourceManager.meshes[0].indices.data(), (size_t)bufferSize);
+    memcpy(mappedData, resourceManager.indicesBuffer.data(), (size_t)bufferSize);
     vmaUnmapMemory(MemAllocator, staging);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -747,14 +740,13 @@ void RenderManager::createCommandBuffers()
 
         vkCmdBeginRenderPass(CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBindDescriptorSets(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayout, 0, 1, &resourceManager.meshes[resourceManager.MeshIDMap["Dummy"]].material.descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayout, 0, 1, &resourceManager.meshes[0].materials[0].descriptorSet, 0, nullptr);
         vkCmdBindPipeline(CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines.spritePipeline);
 
-        VkBuffer vertexBuffers[] = { m_vertexBuffer };
         VkDeviceSize offsets[1] = { 0 };
-        vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(CommandBuffers[i], 0, 1, &m_vertexBuffer, offsets);
         vkCmdBindIndexBuffer(CommandBuffers[i], m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(CommandBuffers[i], static_cast<uint32_t>(resourceManager.meshes[resourceManager.MeshIDMap["Dummy"]].indices.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(CommandBuffers[i], static_cast<uint32_t>(resourceManager.indicesBuffer.size()), 1, 0, 0,0);
         
         vkCmdEndRenderPass(CommandBuffers[i]);
 
@@ -862,9 +854,9 @@ void RenderManager::updateUniformBuffer(uint32_t imageIndex)
  
     ubo.proj[1][1] *= -1;
 
-    for (uint8_t i = 0; i < resourceManager.meshes[0].skeleton.Joints.size(); i++ )
+    for (uint8_t i = 0; i < MAX_JOINTS; i++ )
     {
-        ubo.joints[i] = (resourceManager.meshes[0].skeleton.Joints[i].finalTransformation);
+        ubo.joints[i] = glm::mat4(1);
     }
 
     void* mappedData;
@@ -878,7 +870,6 @@ void RenderManager::recreateSwapChain()
     vkDeviceWaitIdle(VulkanContext.device);
     std::cout << "recreating swapchain!" << std::endl;
     cleanupSwapChain();
-
     createSwapChain();
     createImageViews();
     createRenderPass();
