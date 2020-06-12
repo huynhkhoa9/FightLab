@@ -4,13 +4,14 @@
 const int MAX_JOINTS = 64;
 const int MAX_WEIGHTS = 4;
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
+layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 view;
     mat4 proj;
-	mat4 joints[MAX_JOINTS];
 } ubo;
 
+layout(std430, set = 1, binding = 0) readonly buffer JointMatrices {
+	mat4 jointMatrices[];
+};
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -23,7 +24,16 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model  * vec4(inPosition, 1.0);
+	mat4 model = mat4(1);
+	// Calculate skinned matrix from weights and joint indices of the current vertex
+	mat4 skinMat = 
+		inBoneWeights.x * jointMatrices[int(inBoneIDs.x)];// +
+		//inBoneWeights.y * jointMatrices[int(inBoneIDs.y)] +
+		//inBoneWeights.z * jointMatrices[int(inBoneIDs.z)] +
+		//inBoneWeights.w * jointMatrices[int(inBoneIDs.w)];
+
+	
+    gl_Position = ubo.proj * ubo.view * model  * skinMat* vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord ;
 }

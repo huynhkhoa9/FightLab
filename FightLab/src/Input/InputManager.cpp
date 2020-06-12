@@ -100,16 +100,6 @@ void InputManager::ProcessInput()
 	if (m_inputBuffer.size() > 30)
 		m_inputBuffer.erase(m_inputBuffer.begin(), m_inputBuffer.begin() + 3);
 
-	/*if (m_inputBuffer.size() == 30)
-	{
-		for (int i = 0; i < 30; i += 3)
-		{
-			std::cout << m_inputBuffer[i]->Name << std::endl;
-			std::cout << m_inputBuffer[i + 1]->Name << std::endl;
-			std::cout << m_inputBuffer[i + 2]->Name << std::endl;
-		}
-	}*/
-
 	GLFWgamepadstate state;
 
 	if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1))

@@ -6,3 +6,5 @@ C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin\Debug
 C:\Users\Khoa\Desktop\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb
 C:\Users\Khoa\Desktop\FightLab-master\FightLab-master\FightLab\vendors\GLFW\bin\Debug-windows-x86_64\GLFW\GLFW.pdb
 C:\Users\Khoa\Desktop\FightLab-master\FightLab-master\FightLab\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb
+A:\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin\Debug-windows-x86_64\GLFW\GLFW.pdb
+A:\Game Dev\PROJECTS\FightLab\FightLab\vendors\GLFW\bin-int\Debug-windows-x86_64\GLFW\GLFW.pdb

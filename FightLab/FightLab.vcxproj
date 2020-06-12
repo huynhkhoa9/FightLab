@@ -147,8 +147,10 @@
     <ClInclude Include="src\Core\FightLab.h" />
     <ClInclude Include="src\FightLabMove\Move.h" />
     <ClInclude Include="src\FightLabMove\MoveLink.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\VKBuffer.hpp" />
     <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h" />
     <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\VulkanDevice.h" />
     <ClInclude Include="src\Input\FightLab_Input.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\ResourceManagement\Material\Material.h" />

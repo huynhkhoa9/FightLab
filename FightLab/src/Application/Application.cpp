@@ -19,7 +19,7 @@ void Application::Init()
 	m_inputManager->Init(m_eventBus, m_mainWindow->window);
 	m_eventBus->subscribe(this, &Application::SetAppState);
 
-	m_renderManager.VulkanContext.window = (m_mainWindow->window);
+	m_renderManager.window = (m_mainWindow->window);
 	m_renderManager.Initialize();
 }
 
@@ -61,7 +61,6 @@ void Application::limitFrameRate()
 		std::chrono::duration<double, std::milli> sleepTime = targetFrameTime - diff;
 		std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(sleepTime));
 	}
-		
 	lastTime = std::chrono::high_resolution_clock::now();
 	diff = lastTime - currentTime;
 	

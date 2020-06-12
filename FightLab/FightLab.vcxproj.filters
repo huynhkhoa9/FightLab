@@ -106,6 +106,8 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.h" />
     <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\Vertex.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\VulkanDevice.h" />
+    <ClInclude Include="src\Graphics\RenderBackEnd\VKBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application\Application.cpp">

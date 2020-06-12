@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+#include "Graphics/RenderBackEnd/VKBuffer.hpp"
+
 struct Primitive {
 	uint32_t firstIndex;
 	uint32_t indexCount;
@@ -13,6 +15,7 @@ struct Mesh {
 struct Node
 {
 	Node* parent;
+	std::string         name;
 	uint32_t            index;
 	std::vector<Node*> children;
 	Mesh                mesh;
@@ -33,8 +36,7 @@ struct Skin
 	Node* skeletonRoot =   nullptr;
 	std::vector<glm::mat4> inverseBindMatrices;
 	std::vector<Node*>     joints;
-	VkBuffer               ssbo;
-	VmaAllocation          ssboAlloc;
+	Buffer				   ssbo;
 	VkDescriptorSet        descriptorSet;
 };
 

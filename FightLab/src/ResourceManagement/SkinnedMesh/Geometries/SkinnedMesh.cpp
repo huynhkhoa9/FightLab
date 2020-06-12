@@ -1,7 +1,15 @@
 #include "SkinnedMesh.h"
 
-void SkinnedMesh::drawNode()
+glm::mat4 SkinnedMesh::getNodeMatrix(Node* node)
 {
+	glm::mat4 nodeMatrix = node->getLocalMatrix();
+	Node* currentParent = node->parent;
+	while (currentParent)
+	{
+		nodeMatrix = currentParent->getLocalMatrix() * nodeMatrix;
+		currentParent = currentParent->parent;
+	}
+	return nodeMatrix;
 }
 
 SkinnedMesh::SkinnedMesh()
@@ -10,6 +18,7 @@ SkinnedMesh::SkinnedMesh()
 
 SkinnedMesh::~SkinnedMesh()
 {
+	
 }
 
 void SkinnedMesh::loadMaterials(tinygltf::Model& input)
@@ -36,6 +45,7 @@ void SkinnedMesh::loadNode(const tinygltf::Node& inputNode, const tinygltf::Mode
 	node->matrix = glm::mat4(1.0f);
 	node->index = nodeIndex;
 	node->skin = inputNode.skin;
+	node->name = inputNode.name;
 
 	// Get the local node matrix
 		// It's either made up from translation, rotation, scale or a 4x4 matrix
@@ -190,14 +200,13 @@ void SkinnedMesh::loadNode(const tinygltf::Node& inputNode, const tinygltf::Mode
 void SkinnedMesh::loadSkin(tinygltf::Model& input)
 {
 	skins.resize(input.skins.size());
-
 	for (size_t i = 0; i < input.skins.size(); i++)
 	{
 		tinygltf::Skin glTFSkin = input.skins[i];
 
 		skins[i].name = glTFSkin.name;
 		// Find the root node of the skeleton
-		skins[i].skeletonRoot = nodeFromIndex(glTFSkin.skeleton);
+		skins[i].skeletonRoot = nodeFromIndex(0);
 
 		// Find joint nodes
 		for (int jointIndex : glTFSkin.joints)
@@ -220,22 +229,267 @@ void SkinnedMesh::loadSkin(tinygltf::Model& input)
 
 			// Store inverse bind matrices for this skin in a shader storage buffer object
 			// To keep this sample simple, we create a host visible shader storage buffer
-			
+			VkDeviceSize size = sizeof(glm::mat4) * skins[i].inverseBindMatrices.size();
+			vulkanDevice->createCPUBuffer(size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+				&skins[i].ssbo, skins[i].inverseBindMatrices.data());
+			skins[i].ssbo.map();
 		}
 	}
-
 }
 
-void SkinnedMesh::Draw()
+void SkinnedMesh::loadAnimations(tinygltf::Model& input)
 {
+	animations.resize(input.animations.size());
+	for (size_t i = 0; i < input.animations.size(); i++)
+	{
+		tinygltf::Animation glTFAnimation = input.animations[i];
+		animations[i].name = glTFAnimation.name;
+
+		// Samplers
+		animations[i].samplers.resize(glTFAnimation.samplers.size());
+		for (size_t j = 0; j < glTFAnimation.samplers.size(); j++)
+		{
+			tinygltf::AnimationSampler glTFSampler = glTFAnimation.samplers[j];
+			AnimationSampler& dstSampler = animations[i].samplers[j];
+			dstSampler.interpolation = glTFSampler.interpolation;
+
+			// Read sampler keyframe input time values
+			{
+				const tinygltf::Accessor& accessor = input.accessors[glTFSampler.input];
+				const tinygltf::BufferView& bufferView = input.bufferViews[accessor.bufferView];
+				const tinygltf::Buffer& buffer = input.buffers[bufferView.buffer];
+				const void* dataPtr = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
+				const float* buf = static_cast<const float*>(dataPtr);
+				for (size_t index = 0; index < accessor.count; index++)
+				{
+					dstSampler.inputs.push_back(buf[index]);
+				}
+				// Adjust animation's start and end times
+				for (auto input : animations[i].samplers[j].inputs)
+				{
+					if (input < animations[i].start)
+					{
+						animations[i].start = input;
+					};
+					if (input > animations[i].end)
+					{
+						animations[i].end = input;
+					}
+				}
+			}
+
+			// Read sampler keyframe output translate/rotate/scale values
+			{
+				const tinygltf::Accessor& accessor = input.accessors[glTFSampler.output];
+				const tinygltf::BufferView& bufferView = input.bufferViews[accessor.bufferView];
+				const tinygltf::Buffer& buffer = input.buffers[bufferView.buffer];
+				const void* dataPtr = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
+				switch (accessor.type)
+				{
+				case TINYGLTF_TYPE_VEC3: {
+					const glm::vec3* buf = static_cast<const glm::vec3*>(dataPtr);
+					for (size_t index = 0; index < accessor.count; index++)
+					{
+						dstSampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+					}
+					break;
+				}
+				case TINYGLTF_TYPE_VEC4: {
+					const glm::vec4* buf = static_cast<const glm::vec4*>(dataPtr);
+					for (size_t index = 0; index < accessor.count; index++)
+					{
+						dstSampler.outputsVec4.push_back(buf[index]);
+					}
+					break;
+				}
+				default: {
+					std::cout << "unknown type" << std::endl;
+					break;
+				}
+				}
+			}
+		}
+		// Channels
+		animations[i].channels.resize(glTFAnimation.channels.size());
+		for (size_t j = 0; j < glTFAnimation.channels.size(); j++)
+		{
+			tinygltf::AnimationChannel glTFChannel = glTFAnimation.channels[j];
+			AnimationChannel& dstChannel = animations[i].channels[j];
+			dstChannel.path = glTFChannel.target_path;
+			dstChannel.samplerIndex = glTFChannel.sampler;
+			dstChannel.node = nodeFromIndex(glTFChannel.target_node);
+		}
+	}
+}
+
+void SkinnedMesh::updateJoints(Node* node)
+{
+	if (node->skin > -1)
+	{
+		// Update the joint matrices
+		glm::mat4              inverseTransform = glm::inverse(getNodeMatrix(node));
+		Skin*                   skin = &skins[node->skin];
+		size_t                 numJoints = (uint32_t)skin->joints.size();
+		std::vector<glm::mat4> jointMatrices(numJoints);
+		for (size_t i = 0; i < numJoints; i++)
+		{
+			jointMatrices[i] = getNodeMatrix(skin->joints[i]) * skin->inverseBindMatrices[i];
+			jointMatrices[i] = inverseTransform * jointMatrices[i];
+			/*std::cout << jointMatrices[i][0][0] << " " << jointMatrices[i][0][1] << " " << jointMatrices[i][0][2] << " " << jointMatrices[i][0][3] << " " << std::endl
+					  << jointMatrices[i][1][0] << " " << jointMatrices[i][1][1] << " " << jointMatrices[i][1][2] << " " << jointMatrices[i][1][3] << " " << std::endl
+					  << jointMatrices[i][2][0] << " " << jointMatrices[i][2][1] << " " << jointMatrices[i][2][2] << " " << jointMatrices[i][2][3] << " " << std::endl
+					  << jointMatrices[i][3][0] << " " << jointMatrices[i][3][1] << " " << jointMatrices[i][3][2] << " " << jointMatrices[i][3][3] << " " << std::endl << std::endl;
+			*/		
+		}
+		// Update ssbo
+		skin->ssbo.copyTo(jointMatrices.data(), jointMatrices.size() * sizeof(glm::mat4));
+	}
+
+	for (auto& child : node->children)
+	{
+		updateJoints(child);
+	}
+}
+
+void SkinnedMesh::updateAnimation(float deltaTime)
+{
+	if (activeAnimation > static_cast<uint32_t>(animations.size()) - 1)
+	{
+		std::cout << "No animation with index " << activeAnimation << std::endl;
+		return;
+	}
+	Animation& animation = animations[activeAnimation];
+	animation.CurrentTime += deltaTime;
+	if (animation.CurrentTime > animation.end)
+	{
+		animation.CurrentTime -= animation.end;
+	}
+
+	for (auto& channel : animation.channels)
+	{
+		AnimationSampler& sampler = animation.samplers[channel.samplerIndex];
+		for (size_t i = 0; i < sampler.inputs.size() - 1; i++)
+		{
+			if (sampler.interpolation != "LINEAR")
+			{
+				std::cout << "This sample only supports linear interpolations\n";
+				continue;
+			}
+
+			// Get the input keyframe values for the current time stamp
+			if ((animation.CurrentTime >= sampler.inputs[i]) && (animation.CurrentTime <= sampler.inputs[i + 1]))
+			{
+				float a = (animation.CurrentTime - sampler.inputs[i]) / (sampler.inputs[i + 1] - sampler.inputs[i]);
+				if (channel.path == "translation")
+				{
+					channel.node->translation = glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], a);
+				}
+				if (channel.path == "rotation")
+				{
+					glm::quat q1;
+					q1.x = sampler.outputsVec4[i].x;
+					q1.y = sampler.outputsVec4[i].y;
+					q1.z = sampler.outputsVec4[i].z;
+					q1.w = sampler.outputsVec4[i].w;
+
+					glm::quat q2;
+					q2.x = sampler.outputsVec4[i + 1].x;
+					q2.y = sampler.outputsVec4[i + 1].y;
+					q2.z = sampler.outputsVec4[i + 1].z;
+					q2.w = sampler.outputsVec4[i + 1].w;
+
+					channel.node->rotation = glm::normalize(glm::slerp(q1, q2, a));
+				}
+				if (channel.path == "scale")
+				{
+					channel.node->scale = glm::mix(sampler.outputsVec4[i], sampler.outputsVec4[i + 1], a);
+				}
+			}
+		}
+	}
+	for (auto& node : nodes)
+	{
+		updateJoints(node);
+	}
+}
+
+void SkinnedMesh::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, Node node)
+{
+	if (node.mesh.primitives.size() > 0)
+	{
+		// Pass the node's matrix via push constanst
+		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
+		glm::mat4              nodeMatrix = node.matrix;
+		Node* currentParent = node.parent;
+		while (currentParent)
+		{
+			nodeMatrix = currentParent->matrix * nodeMatrix;
+			currentParent = currentParent->parent;
+		}
+		// Pass the final matrix to the vertex shader using push constants
+		//vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
+		// Bind SSBO with skin data for this node to set 1
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &skins[node.skin].descriptorSet, 0, nullptr);
+		for (Primitive& primitive : node.mesh.primitives)
+		{
+			if (primitive.indexCount > 0)
+			{
+				// Get the texture index for this primitive
+				//Texture texture = textures[materials[primitive.materialIndex].baseColorTextureIndex];
+				// Bind the descriptor for the current primitive's texture to set 2
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &materials[0].descriptorSet, 0, nullptr);
+				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
+			}
+		}
+	}
+	for (auto& child : node.children)
+	{
+		drawNode(commandBuffer, pipelineLayout, *child);
+	}
+}
+
+void SkinnedMesh::Draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+{
+	// All vertices and indices are stored in single buffers, so we only need to bind once
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+	// Render all nodes at top-level
+	for (auto& node : nodes)
+	{
+		drawNode(commandBuffer, pipelineLayout, *node);
+	}
 }
 
 Node* SkinnedMesh::nodeFromIndex(uint32_t index)
 {
-	return nullptr;
+	Node* nodeFound = nullptr;
+	for (auto& node : nodes)
+	{
+		nodeFound = findNode(node, index);
+		if (nodeFound)
+		{
+			break;
+		}
+	}
+	return nodeFound;
 }
 
 Node* SkinnedMesh::findNode(Node* parent, uint32_t index)
 {
-	return nullptr;
+	Node* nodeFound = nullptr;
+	if (parent->index == index)
+	{
+		return parent;
+	}
+	for (auto& child : parent->children)
+	{
+		nodeFound = findNode(child, index);
+		if (nodeFound)
+		{
+			break;
+		}
+	}
+	return nodeFound;
 }

@@ -11,10 +11,14 @@
 #include <chrono>
 
 #include "ResourceManagement/ResourceManger.h"
+#include "VulkanDevice.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
-
+struct UniformBufferObject {
+	glm::mat4 view;
+	glm::mat4 proj;
+};
 
 class RenderManager
 {
@@ -28,55 +32,52 @@ public:
 	void Draw();
 
 	void CleanUp();
-	
-	VkContext VulkanContext;
+
+	VulkanDevice* vulkanDevice;
+	GLFWwindow* window;
+
+	void createUniformBuffers();
 
 private:
-	
-	ResourceManager resourceManager;
-	VkBuffer m_vertexBuffer;
-	VkBuffer m_vertexBuffer2;
-	VmaAllocation m_VertexAllocation;
-	VkBuffer m_indexBuffer;
-	VmaAllocation m_IndexAllocation;
+	VkInstance instance = VK_NULL_HANDLE;
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+	ResourceManager* resourceManager;
 	std::vector<VkBuffer> m_uniformBuffers{ VK_NULL_HANDLE };
 	std::vector<VmaAllocation> m_uniformBuffersAllocation{};
 
-	std::vector<VkBuffer> m_animuniformBuffers{ VK_NULL_HANDLE };
-	std::vector<VmaAllocation> m_animuniformBuffersAllocation{};
-
 	struct
 	{
-		VkPipeline wireframePipeline;
-		VkPipeline spritePipeline;
+		VkPipeline wireframePipeline = VK_NULL_HANDLE;
+		VkPipeline spritePipeline = VK_NULL_HANDLE;
 	} Pipelines;
     
-	VkDescriptorPool DescriptorPool;
-	std::vector<VkDescriptorSet> DescriptorSets;
-	VkDescriptorSetLayout DescriptorSetLayout;
-    VkPipelineLayout PipelineLayout;
+	VkDescriptorPool DescriptorPool = VK_NULL_HANDLE;
+	VkDescriptorSet DescriptorSet;
+	
+	struct DescriptorSetLayouts
+	{
+		VkDescriptorSetLayout matrices;
+		VkDescriptorSetLayout textures;
+		VkDescriptorSetLayout jointMatrices;
+	} descriptorSetLayouts;
 
+	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 
-    VkDebugUtilsMessengerEXT DebugMessenger;
+    VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
-	VkPhysicalDeviceFeatures Features;
-	VkPhysicalDeviceProperties Properties;
-
-	//QUEUES
-	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_presentQueue = VK_NULL_HANDLE;
-	VkQueue m_transferQueue = VK_NULL_HANDLE;
 
-    VkSwapchainKHR SwapChain;
+    VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
     std::vector<VkImage> SwapChainImages;
     VkFormat SwapChainImageFormat;
     VkExtent2D SwapChainExtent;
     std::vector<VkImageView> SwapChainImageViews;
     std::vector<VkFramebuffer> SwapChainFramebuffers;
 
-    VkRenderPass RenderPass;
+    VkRenderPass RenderPass = VK_NULL_HANDLE;
 
-    VkCommandPool CommandPool;
 	std::vector<VkCommandBuffer> CommandBuffers;
     
 	VkImage DepthImage;
@@ -191,7 +192,7 @@ private:
 			}
 
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, VulkanContext.surface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
 			if (presentSupport) {
 				indices.presentFamily = i;
@@ -221,22 +222,22 @@ private:
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
 		SwapChainSupportDetails details;
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, VulkanContext.surface, &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, VulkanContext.surface, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, VulkanContext.surface, &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, VulkanContext.surface, &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, VulkanContext.surface, &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
 		}
 
 		return details;
@@ -271,7 +272,7 @@ private:
 		}
 		else {
 			int width, height;
-			glfwGetFramebufferSize(VulkanContext.window, &width, &height);
+			glfwGetFramebufferSize(window, &width, &height);
 
 			VkExtent2D actualExtent = { static_cast<uint32_t>(width),
 										static_cast<uint32_t>(height) };
@@ -303,15 +304,14 @@ private:
 
 #pragma region DRAWING
 
-	void createVertexBuffer();
-	void createIndexBuffer();
-	void createUniformBuffers();
 	void createFramebuffers();
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
 	void createDescriptorPool();
-	void createDescriptorSets(Material& material,const VkImageView& imageView,const VkSampler& sampler);
+	
+	void setupDescriptorSets();
+	void createMaterials(Material& material,const VkImageView& imageView,const VkSampler& sampler);
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
 		VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage memUsage) {
@@ -334,7 +334,7 @@ private:
 
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(VulkanContext.physicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -349,11 +349,11 @@ private:
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = CommandPool;
+		allocInfo.commandPool = vulkanDevice->commandPool;
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(VulkanContext.device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -372,10 +372,10 @@ private:
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(m_graphicsQueue);
+		vkQueueSubmit(vulkanDevice->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(vulkanDevice->graphicsQueue);
 
-		vkFreeCommandBuffers(VulkanContext.device, CommandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(vulkanDevice->logicalDevice, vulkanDevice->commandPool, 1, &commandBuffer);
 	}
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
@@ -496,7 +496,7 @@ private:
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(VulkanContext.physicalDevice, format, &props);
+			vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
 			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
 				return format;

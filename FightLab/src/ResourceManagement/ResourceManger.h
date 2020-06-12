@@ -3,26 +3,8 @@
 #define RESOURCE_MANAGER_H
 
 #include "ResourceManagement/SkinnedMesh/Geometries/SkinnedMesh.h"
+#include "Graphics/RenderBackEnd/VulkanDevice.h"
 #include "Utility.h"
-struct VkContext
-{
-	VkInstance instance;
-	VkSurfaceKHR surface;
-
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-	VkDevice device;
-
-	bool framebufferResized = false;
-
-	GLFWwindow* window;
-};
-
-struct ModelContext
-{
-	uint32_t indexOffset = 0;
-	uint32_t vertexCount = 0;
-};
-
 class ResourceManager
 {
 public:
@@ -32,8 +14,6 @@ public:
 	std::map<const std::string, uint32_t> TextureImageViewIDMap;
 	std::map<const std::string, uint32_t> ModelIDMap;
 	std::map<const std::string, uint32_t> MeshIDMap;
-	std::vector<SkinnedVertex> verticesBuffer;
-	std::vector<uint32_t> indicesBuffer;
 
 	//Shader
 	std::vector<VkShaderModule> ShaderModulesLibrary;
@@ -43,26 +23,14 @@ public:
 	std::vector<VkImageView> TextureImageViewLibrary;
 	std::vector<VkSampler> ImageSamplerLibrary;
 	std::vector<SkinnedMesh> meshes;
+	
 	//SkinnedMesh and Animation
-
-
-	ResourceManager(const VkContext& cntxt, const VmaAllocator& allocator, const VkCommandPool& cmdPool, const VkQueue& gfxQueue) {
-		context = cntxt;
-		memAllocator = allocator;
-		graphicsQueue = gfxQueue;
-		commandPool = cmdPool;
-	}
-	ResourceManager(const ResourceManager& r)
+	ResourceManager(VulkanDevice* vkDevice) 
 	{
-		context = r.context;
-		memAllocator = r.memAllocator;
-		graphicsQueue = r.graphicsQueue;
-		commandPool = r.commandPool;
+		vulkanDevice = vkDevice;
 	}
-	ResourceManager() 
-	{
-	}
-	~ResourceManager() {}
+	~ResourceManager()
+	{}
 
 	//Load shader from file
 	VkShaderModule LoadShader(const std::string& filename, const std::string& shaderName);
@@ -88,10 +56,7 @@ public:
 	//Clean Up resources
 	void CleanUp();
 private:
-	VkContext context;
-	VkCommandPool commandPool;
-	VkQueue graphicsQueue;
-	VmaAllocator memAllocator;
+	VulkanDevice* vulkanDevice;
 	std::string skinnedMeshDirectory;
 	std::vector<VmaAllocation> textureAllocations;
 
@@ -134,11 +99,11 @@ private:
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool;
+		allocInfo.commandPool = vulkanDevice->commandPool;
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(context.device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -157,10 +122,10 @@ private:
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue);
+		vkQueueSubmit(vulkanDevice->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(vulkanDevice->graphicsQueue);
 
-		vkFreeCommandBuffers(context.device, commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(vulkanDevice->logicalDevice, vulkanDevice->commandPool, 1, &commandBuffer);
 	}
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
@@ -254,6 +219,5 @@ private:
 	
 	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 	
-	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, Node* parent);
 };
 #endif

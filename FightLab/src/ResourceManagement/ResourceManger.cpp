@@ -14,7 +14,7 @@ VkShaderModule ResourceManager::LoadShader(const std::string& filename, const st
 	createInfo.codeSize = shaderFile.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderFile.data());
 	
-	if (vkCreateShaderModule(context.device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+	if (vkCreateShaderModule(vulkanDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create shader module!");
 	}
 
@@ -37,19 +37,43 @@ bool ResourceManager::LoadSkinnedMesh(const std::string& path, const std::string
 	tinygltf::TinyGLTF gltfContext;
 	std::string error, warning;
 
-	bool fileLoaded = gltfContext.LoadBinaryFromFile(&glTFInput, &error, &warning, path);
+	bool fileLoaded = gltfContext.LoadASCIIFromFile(&glTFInput, &error, &warning, path);
 
 	if (fileLoaded) 
 	{
+		std::vector<SkinnedVertex> verticesBuffer;
+		std::vector<uint32_t>      indicesBuffer;
+
 		SkinnedMesh mesh;
-		mesh.pResourceManager = this;
+		mesh.vulkanDevice = vulkanDevice;
 		mesh.loadMaterials(glTFInput);
 		const tinygltf::Scene& scene = glTFInput.scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) 
 		{
 			const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
-			mesh.loadNode(node, glTFInput, nullptr, 0,verticesBuffer, indicesBuffer);
+			mesh.loadNode(node, glTFInput, nullptr, -1, verticesBuffer, indicesBuffer);
 		}
+
+		mesh.loadSkin(glTFInput);
+		mesh.loadAnimations(glTFInput);
+		// Calculate initial pose
+		for (auto node : mesh.nodes)
+		{
+			mesh.updateJoints(node);
+		}
+		VkDeviceSize vertexBufferSize = sizeof(verticesBuffer[0]) * verticesBuffer.size();
+		VkDeviceSize indexBufferSize = indicesBuffer.size() * sizeof(uint32_t);
+
+		mesh.indices.count = static_cast<uint32_t>(indicesBuffer.size());
+		
+		vulkanDevice->createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			mesh.vertices.buffer, mesh.vertices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, verticesBuffer.data());
+
+		vulkanDevice->createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			mesh.indices.buffer, mesh.indices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, indicesBuffer.data());
+
 		MeshIDMap[skinnedMeshName] = static_cast<uint32_t>(meshes.size());
 		LoadTexture("resources/models/FightLabDummy/viking_room.png", skinnedMeshName);
 		meshes.push_back(mesh);
@@ -90,7 +114,7 @@ void ResourceManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	//allocInfo.preferredFlags = preferredProperties;
 	//allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-	vmaCreateBuffer(memAllocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
+	vmaCreateBuffer(*vulkanDevice->memAllocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
 }
 
 void ResourceManager::CleanUp()
@@ -99,7 +123,7 @@ void ResourceManager::CleanUp()
 	{
 		for (int i = 0; i < ShaderModulesLibrary.size(); i++)
 		{
-			vkDestroyShaderModule(context.device, ShaderModulesLibrary[i], nullptr);
+			vkDestroyShaderModule(vulkanDevice->logicalDevice, ShaderModulesLibrary[i], nullptr);
 		}
 	}
 
@@ -107,9 +131,19 @@ void ResourceManager::CleanUp()
 	{
 		for (int i = 0; i < ImageSamplerLibrary.size(); i++)
 		{
-			vkDestroySampler(context.device, ImageSamplerLibrary[i], nullptr);
-			vkDestroyImageView(context.device, TextureImageViewLibrary[i], nullptr);
-			vmaDestroyImage(memAllocator, TextureImageLibrary[i], textureAllocations[i]);
+			vkDestroySampler(vulkanDevice->logicalDevice, ImageSamplerLibrary[i], nullptr);
+			vkDestroyImageView(vulkanDevice->logicalDevice, TextureImageViewLibrary[i], nullptr);
+			vmaDestroyImage(*vulkanDevice->memAllocator, TextureImageLibrary[i], textureAllocations[i]);
+		}
+	}
+
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		vmaDestroyBuffer(*vulkanDevice->memAllocator, meshes[i].vertices.buffer, meshes[i].vertices.alloc);
+		vmaDestroyBuffer(*vulkanDevice->memAllocator, meshes[i].indices.buffer, meshes[i].indices.alloc);
+		for (size_t s = 0; s < meshes[i].skins.size(); s++)
+		{
+			meshes[i].skins[s].ssbo.destroy();
 		}
 	}
 }
@@ -135,7 +169,7 @@ void ResourceManager::createImage(uint32_t width, uint32_t height, uint32_t mipL
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-	vmaCreateImage(memAllocator, &imageInfo, &allocInfo, &image, &allocation, nullptr);
+	vmaCreateImage(*vulkanDevice->memAllocator, &imageInfo, &allocInfo, &image, &allocation, nullptr);
 }
 
 VkImage ResourceManager::createTexture(const std::string& fileName, const std::string& textureName, uint32_t& mipLevels)
@@ -159,9 +193,9 @@ VkImage ResourceManager::createTexture(const std::string& fileName, const std::s
 		stagingBuffer, staging);
 
 	void* mappedData;
-	vmaMapMemory(memAllocator, staging, &mappedData);
+	vmaMapMemory(*vulkanDevice->memAllocator, staging, &mappedData);
 	memcpy(mappedData, pixels, static_cast<size_t>(imageSize));
-	vmaUnmapMemory(memAllocator, staging);
+	vmaUnmapMemory(*vulkanDevice->memAllocator, staging);
 
 	stbi_image_free(pixels);
 	VkImage textureImage;
@@ -178,7 +212,7 @@ VkImage ResourceManager::createTexture(const std::string& fileName, const std::s
 	TextureImageLibrary.push_back(textureImage);
 	textureAllocations.push_back(txtAllocation);
 
-	vmaDestroyBuffer(memAllocator, stagingBuffer, staging);
+	vmaDestroyBuffer(*vulkanDevice->memAllocator, stagingBuffer, staging);
 	return textureImage;
 }
 
@@ -196,7 +230,7 @@ void ResourceManager::CreateImageView(const std::string name, VkImage image, VkF
 	viewInfo.subresourceRange.layerCount = 1;
 
 	VkImageView imageView;
-	if (vkCreateImageView(context.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+	if (vkCreateImageView(vulkanDevice->logicalDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view!");
 	}
 
@@ -228,7 +262,7 @@ void ResourceManager::CreateSampler(const std::string name, int mipLevels)
 	samplerInfo.maxLod = static_cast<float>(mipLevels);
 	samplerInfo.mipLodBias = 0.0f; // Optional
 
-	if (vkCreateSampler(context.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+	if (vkCreateSampler(vulkanDevice->logicalDevice, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 
@@ -240,7 +274,7 @@ void ResourceManager::generateMipmaps(VkImage image, VkFormat imageFormat, int32
 {
 	// Check if image format supports linear blitting
 	VkFormatProperties formatProperties;
-	vkGetPhysicalDeviceFormatProperties(context.physicalDevice, imageFormat, &formatProperties);
+	vkGetPhysicalDeviceFormatProperties(vulkanDevice->physicalDevice, imageFormat, &formatProperties);
 
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 		throw std::runtime_error("texture image format does not support linear blitting!");
