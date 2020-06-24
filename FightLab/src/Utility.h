@@ -23,10 +23,11 @@ struct Node
 	glm::vec3           scale{ 1.0f };
 	glm::quat           rotation{};
 	int32_t             skin = -1;
-	glm::mat4           matrix;
+	glm::mat4           matrix = glm::mat4(1.0f);
+	
 	glm::mat4 getLocalMatrix()
 	{
-		return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
+		return glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation) * glm::scale(scale) * matrix;
 	}
 };
 

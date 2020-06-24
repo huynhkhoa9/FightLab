@@ -16,29 +16,26 @@
     <Filter Include="Graphics">
       <UniqueIdentifier>{1653CE33-0220-293F-2B39-17E717655ECD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics\Animator">
+      <UniqueIdentifier>{00597391-6C6F-7127-B5E6-FC48213C42AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Material">
+      <UniqueIdentifier>{745AF5D4-E070-F36A-29E8-7E8C953DC4F2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Graphics\RenderBackEnd">
       <UniqueIdentifier>{6DD6A960-59D0-D2B2-423D-69C32ED6381F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\SkinnedMesh">
+      <UniqueIdentifier>{BEB2E536-AA41-6F00-5360-83FB3FCE7FA6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Sprite">
+      <UniqueIdentifier>{9C9B73B1-0827-E175-1138-646A7D423D76}</UniqueIdentifier>
     </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{953A660D-014F-8EBE-CAD0-311E36A48AEF}</UniqueIdentifier>
     </Filter>
     <Filter Include="ResourceManagement">
       <UniqueIdentifier>{8AB4FDD2-7698-BE28-DFF8-B87BCBFBA8AA}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ResourceManagement\Material">
-      <UniqueIdentifier>{689ECBCE-D4AB-F9B4-5D92-F59FC99EC56B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ResourceManagement\SkinnedMesh">
-      <UniqueIdentifier>{32E23E0E-1E08-0975-074E-8E40F3122E41}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ResourceManagement\SkinnedMesh\Animator">
-      <UniqueIdentifier>{9CA71C82-0837-DE6C-1133-BF847D411979}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ResourceManagement\SkinnedMesh\Geometries">
-      <UniqueIdentifier>{7598A50E-E1B2-08B0-2AD5-1844962E30B7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ResourceManagement\Sprite">
-      <UniqueIdentifier>{90524085-FC14-740F-45C5-029CB1C64CED}</UniqueIdentifier>
     </Filter>
     <Filter Include="StateMachine">
       <UniqueIdentifier>{BB54AC3C-A7B7-3BE1-503D-74973C7F0764}</UniqueIdentifier>
@@ -60,17 +57,59 @@
     <ClInclude Include="src\Core\FightLab.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Transform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\FightLabMove\Move.h">
       <Filter>FightLabMove</Filter>
     </ClInclude>
     <ClInclude Include="src\FightLabMove\MoveLink.h">
       <Filter>FightLabMove</Filter>
     </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Animation.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Clip.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Frame.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Interpolation.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Pose.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Skeleton.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\Track.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Animator\TransformTrack.h">
+      <Filter>Graphics\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Material\Material.h">
+      <Filter>Graphics\Material</Filter>
+    </ClInclude>
     <ClInclude Include="src\Graphics\RenderBackEnd\RenderManager.h">
+      <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderBackEnd\VulkanDevice.h">
       <Filter>Graphics\RenderBackEnd</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\RenderBackEnd\vk_mem_alloc.h">
       <Filter>Graphics\RenderBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\SkinnedMesh\SkinnedMesh.h">
+      <Filter>Graphics\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\SkinnedMesh\SkinnedVertex.h">
+      <Filter>Graphics\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Sprite\Sprite.h">
+      <Filter>Graphics\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="src\Input\FightLab_Input.h">
       <Filter>Input</Filter>
@@ -78,20 +117,11 @@
     <ClInclude Include="src\Input\InputManager.h">
       <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="src\ResourceManagement\Material\Material.h">
-      <Filter>ResourceManagement\Material</Filter>
+    <ClInclude Include="src\ResourceManagement\GLTFLoader.h">
+      <Filter>ResourceManagement</Filter>
     </ClInclude>
     <ClInclude Include="src\ResourceManagement\ResourceManger.h">
       <Filter>ResourceManagement</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Animation.h">
-      <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Animator\Skeleton.h">
-      <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ResourceManagement\Sprite\Sprite.h">
-      <Filter>ResourceManagement\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="src\StateMachine\FightLabSM.h">
       <Filter>StateMachine</Filter>
@@ -104,10 +134,6 @@
     </ClInclude>
     <ClInclude Include="src\Utility.h" />
     <ClInclude Include="src\pch.h" />
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.h" />
-    <ClInclude Include="src\ResourceManagement\SkinnedMesh\Geometries\Vertex.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\VulkanDevice.h" />
-    <ClInclude Include="src\Graphics\RenderBackEnd\VKBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application\Application.cpp">
@@ -116,23 +142,44 @@
     <ClCompile Include="src\Core\EventSystem\EventSystem.cpp">
       <Filter>Core\EventSystem</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Transform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\FightLabMove\Move.cpp">
       <Filter>FightLabMove</Filter>
     </ClCompile>
     <ClCompile Include="src\FightLabMove\MoveLink.cpp">
       <Filter>FightLabMove</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\Animator\Clip.cpp">
+      <Filter>Graphics\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Animator\Pose.cpp">
+      <Filter>Graphics\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Animator\Skeleton.cpp">
+      <Filter>Graphics\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Animator\Track.cpp">
+      <Filter>Graphics\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Animator\TransformTrack.cpp">
+      <Filter>Graphics\Animator</Filter>
+    </ClCompile>
     <ClCompile Include="src\Graphics\RenderBackEnd\RenderManager.cpp">
       <Filter>Graphics\RenderBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\SkinnedMesh\SkinnedMesh.cpp">
+      <Filter>Graphics\SkinnedMesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Input\InputManager.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp">
+    <ClCompile Include="src\ResourceManagement\GLTFLoader.cpp">
       <Filter>ResourceManagement</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceManagement\SkinnedMesh\Animator\Skeleton.cpp">
-      <Filter>ResourceManagement\SkinnedMesh\Animator</Filter>
+    <ClCompile Include="src\ResourceManagement\ResourceManger.cpp">
+      <Filter>ResourceManagement</Filter>
     </ClCompile>
     <ClCompile Include="src\StateMachine\FightLabSM.cpp">
       <Filter>StateMachine</Filter>
@@ -141,6 +188,6 @@
       <Filter>StateMachine</Filter>
     </ClCompile>
     <ClCompile Include="src\pch.cpp" />
-    <ClCompile Include="src\ResourceManagement\SkinnedMesh\Geometries\SkinnedMesh.cpp" />
+    <ClCompile Include="src\ResourceManagement\cgltf.c" />
   </ItemGroup>
 </Project>

@@ -24,6 +24,7 @@ private:
 	InputManager* m_inputManager;
 	EventBus* m_eventBus;
 	RenderManager m_renderManager;
+	ResourceManager* m_resourceManager;
 
 	int frames = 0;
 	void limitFrameRate();

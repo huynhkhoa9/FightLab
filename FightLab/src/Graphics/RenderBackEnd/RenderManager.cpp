@@ -40,7 +40,7 @@ void RenderManager::Initialize()
     resourceManager->LoadShader("shaders/frag.spv", "default_fragshader");
     
     //load models
-    resourceManager->LoadSkinnedMesh("resources/models/FightLabDummy/Dummy.gltf", "Dummy");
+    resourceManager->LoadMesh("resources/models/FightLabDummy/Dummy.gltf", "Dummy");
     //create Pipelines
     createGraphicsPipeline();
     
@@ -76,6 +76,7 @@ void RenderManager::Draw()
     ImagesInFlight[imageIndex] = InFlightFences[currentFrame];
 
     updateUniformBuffer(imageIndex);
+    //resourceManager->meshes[0].updateAnimation(0.0166);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -507,10 +508,16 @@ void RenderManager::createGraphicsPipeline()
         descriptorSetLayouts.jointMatrices,
         descriptorSetLayouts.textures };
 
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.offset = 0;
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstantRange.size = sizeof(glm::mat4);
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     pipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
     if (vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS) {
@@ -760,57 +767,74 @@ void RenderManager::setupDescriptorSets()
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
 
-    //material.descriptorSet.resize(SwapChainImages.size());
     if (vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &DescriptorSet) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = m_uniformBuffers[0];
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(UniformBufferObject);
+
+    VkWriteDescriptorSet descriptorWrite{};
+
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = DescriptorSet;
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+    vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &descriptorWrite, 0, nullptr);
+
     // Descriptor set for glTF model skin joint matrices
-    for (auto& skin : resourceManager->meshes[0].skins)
+    for (uint32_t i = 0; i < resourceManager->meshes.size(); i++)
     {
-        VkDescriptorSetLayout layout = descriptorSetLayouts.jointMatrices;
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = DescriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(resourceManager->meshes[0].skins.size());
-        allocInfo.pSetLayouts = &layout;
-        vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &skin.descriptorSet);
-        
-        VkWriteDescriptorSet writeDescriptorSet{};
-        writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeDescriptorSet.dstSet = skin.descriptorSet;
-        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        writeDescriptorSet.dstBinding = 0;
-        writeDescriptorSet.pBufferInfo = &skin.ssbo.descriptor;
-        writeDescriptorSet.descriptorCount = 1;
-        vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+        for (auto& skin : resourceManager->meshes[i].skins)
+        {
+            VkDescriptorSetLayout layout = descriptorSetLayouts.jointMatrices;
+            VkDescriptorSetAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = DescriptorPool;
+            allocInfo.descriptorSetCount = static_cast<uint32_t>(resourceManager->meshes[0].skins.size());
+            allocInfo.pSetLayouts = &layout;
+            vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &skin.descriptorSet);
+
+            VkWriteDescriptorSet writeDescriptorSet{};
+            writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writeDescriptorSet.dstSet = skin.descriptorSet;
+            writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            writeDescriptorSet.dstBinding = 0;
+            writeDescriptorSet.pBufferInfo = &skin.ssbo.descriptor;
+            writeDescriptorSet.descriptorCount = 1;
+            vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+        }
     }
 
     //Create materials
+    //NEED FIXING TO MAKE REDUCE NUMBER OF LOOPS
+    //ADD TO LOOP ABOVE AND REWORK THE LOAD TEXTURE
     for (auto& mesh : resourceManager->MeshIDMap)
     {
-        createMaterials(resourceManager->meshes[mesh.second].materials[0], resourceManager->GetImageView(mesh.first), resourceManager->GetImageSampler(mesh.first));
+        createMaterials(mesh.second, resourceManager->GetImageView(mesh.first), resourceManager->GetImageSampler(mesh.first));
     }
 }
 
-void RenderManager::createMaterials(Material& material,const VkImageView& imageView,const VkSampler& sampler )
+void RenderManager::createMaterials(uint32_t& meshID,const VkImageView& imageView,const VkSampler& sampler )
 {
     VkDescriptorSetLayout layout = descriptorSetLayouts.textures;
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = DescriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(resourceManager->meshes[0].materials.size());
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(resourceManager->meshes[meshID].materials.size());
     allocInfo.pSetLayouts = &layout;
 
-    //material.descriptorSet.resize(SwapChainImages.size());
-    if (vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &material.descriptorSet) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
-
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_uniformBuffers[0];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+    for (uint32_t i = 0; i < resourceManager->meshes[meshID].materials.size(); i++)
+    {
+        //material.descriptorSet.resize(SwapChainImages.size());
+        if (vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &resourceManager->meshes[meshID].materials[i].descriptorSet) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate descriptor sets!");
+        }
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -818,31 +842,22 @@ void RenderManager::createMaterials(Material& material,const VkImageView& imageV
         imageInfo.sampler = sampler;
 
         VkWriteDescriptorSet descriptorWrite{};
-
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = DescriptorSet;
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
-        vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &descriptorWrite, 0, nullptr);
-        
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = material.descriptorSet;
+        descriptorWrite.dstSet = resourceManager->meshes[meshID].materials[i].descriptorSet;
         descriptorWrite.dstBinding = 0;
         descriptorWrite.dstArrayElement = 0;
         descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrite.descriptorCount = 1;
         descriptorWrite.pImageInfo = &imageInfo;
         vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &descriptorWrite, 0, nullptr);
+    }
 }
 
 void RenderManager::updateUniformBuffer(uint32_t imageIndex)
 {
     UniformBufferObject ubo{};
-    ubo.view = glm::lookAt(glm::vec3(0.0f, 10.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 1000000.0f);
+    ubo.view = glm::lookAt(glm::vec3(00.0f, 10.0f, 50.0f), glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, .0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 10000.0f);
     ubo.proj[1][1] *= -1;
 
     void* mappedData;

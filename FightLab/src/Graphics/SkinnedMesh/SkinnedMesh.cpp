@@ -54,7 +54,7 @@ void SkinnedMesh::loadNode(const tinygltf::Node& inputNode, const tinygltf::Mode
 	}
 	if (inputNode.rotation.size() == 4) {
 		glm::quat q = glm::make_quat(inputNode.rotation.data());
-		node->matrix *= glm::mat4(q);
+		node->matrix *= glm::toMat4(q);
 	}
 	if (inputNode.scale.size() == 3) {
 		node->matrix = glm::scale(node->matrix, glm::vec3(glm::make_vec3(inputNode.scale.data())));
@@ -62,6 +62,12 @@ void SkinnedMesh::loadNode(const tinygltf::Node& inputNode, const tinygltf::Mode
 	if (inputNode.matrix.size() == 16) {
 		node->matrix = glm::make_mat4x4(inputNode.matrix.data());
 	};
+
+	std::cout << node->name << ": " << std::endl;
+	std::cout << node->matrix[0][0] << " " << node->matrix[0][1] << " " << node->matrix[0][2] << " " << node->matrix[0][3] << std::endl
+			  << node->matrix[1][0] << " " << node->matrix[1][1] << " " << node->matrix[1][2] << " " << node->matrix[1][3] << std::endl
+			  << node->matrix[2][0] << " " << node->matrix[2][1] << " " << node->matrix[2][2] << " " << node->matrix[2][3] << std::endl
+			  << node->matrix[3][0] << " " << node->matrix[3][1] << " " << node->matrix[3][2] << " " << node->matrix[3][3] << std::endl << std::endl;
 
 	// Load node's children
 	if (inputNode.children.size() > 0) {
@@ -252,7 +258,7 @@ void SkinnedMesh::loadAnimations(tinygltf::Model& input)
 		{
 			tinygltf::AnimationSampler glTFSampler = glTFAnimation.samplers[j];
 			AnimationSampler& dstSampler = animations[i].samplers[j];
-			dstSampler.interpolation = glTFSampler.interpolation;
+			dstSampler.interpolation = glTFSampler.interpolation;//"STEP";
 
 			// Read sampler keyframe input time values
 			{
@@ -336,11 +342,6 @@ void SkinnedMesh::updateJoints(Node* node)
 		{
 			jointMatrices[i] = getNodeMatrix(skin->joints[i]) * skin->inverseBindMatrices[i];
 			jointMatrices[i] = inverseTransform * jointMatrices[i];
-			/*std::cout << jointMatrices[i][0][0] << " " << jointMatrices[i][0][1] << " " << jointMatrices[i][0][2] << " " << jointMatrices[i][0][3] << " " << std::endl
-					  << jointMatrices[i][1][0] << " " << jointMatrices[i][1][1] << " " << jointMatrices[i][1][2] << " " << jointMatrices[i][1][3] << " " << std::endl
-					  << jointMatrices[i][2][0] << " " << jointMatrices[i][2][1] << " " << jointMatrices[i][2][2] << " " << jointMatrices[i][2][3] << " " << std::endl
-					  << jointMatrices[i][3][0] << " " << jointMatrices[i][3][1] << " " << jointMatrices[i][3][2] << " " << jointMatrices[i][3][3] << " " << std::endl << std::endl;
-			*/		
 		}
 		// Update ssbo
 		skin->ssbo.copyTo(jointMatrices.data(), jointMatrices.size() * sizeof(glm::mat4));
@@ -376,7 +377,7 @@ void SkinnedMesh::updateAnimation(float deltaTime)
 				std::cout << "This sample only supports linear interpolations\n";
 				continue;
 			}
-
+			
 			// Get the input keyframe values for the current time stamp
 			if ((animation.CurrentTime >= sampler.inputs[i]) && (animation.CurrentTime <= sampler.inputs[i + 1]))
 			{
@@ -398,7 +399,7 @@ void SkinnedMesh::updateAnimation(float deltaTime)
 					q2.y = sampler.outputsVec4[i + 1].y;
 					q2.z = sampler.outputsVec4[i + 1].z;
 					q2.w = sampler.outputsVec4[i + 1].w;
-
+				
 					channel.node->rotation = glm::normalize(glm::slerp(q1, q2, a));
 				}
 				if (channel.path == "scale")
@@ -408,6 +409,7 @@ void SkinnedMesh::updateAnimation(float deltaTime)
 			}
 		}
 	}
+
 	for (auto& node : nodes)
 	{
 		updateJoints(node);
@@ -428,7 +430,7 @@ void SkinnedMesh::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 			currentParent = currentParent->parent;
 		}
 		// Pass the final matrix to the vertex shader using push constants
-		//vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
 		// Bind SSBO with skin data for this node to set 1
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &skins[node.skin].descriptorSet, 0, nullptr);
 		for (Primitive& primitive : node.mesh.primitives)

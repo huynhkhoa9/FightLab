@@ -49,7 +49,8 @@ private:
 
 	struct
 	{
-		VkPipeline wireframePipeline = VK_NULL_HANDLE;
+		VkPipeline staticMeshPipeline = VK_NULL_HANDLE;
+		VkPipeline skinnedMesPipeline = VK_NULL_HANDLE;
 		VkPipeline spritePipeline = VK_NULL_HANDLE;
 	} Pipelines;
     
@@ -311,7 +312,7 @@ private:
 	void createDescriptorPool();
 	
 	void setupDescriptorSets();
-	void createMaterials(Material& material,const VkImageView& imageView,const VkSampler& sampler);
+	void createMaterials(uint32_t& meshID,const VkImageView& imageView,const VkSampler& sampler);
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredProperties,
 		VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage memUsage) {

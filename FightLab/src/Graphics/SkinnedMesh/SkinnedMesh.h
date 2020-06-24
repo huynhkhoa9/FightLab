@@ -1,9 +1,10 @@
 #pragma once
-#include "Vertex.h"
+
 #include "Utility.h"
+#include "SkinnedVertex.h"
 #include "Graphics/RenderBackEnd/VulkanDevice.h"
-#include "ResourceManagement/Material/Material.h"
-#include "ResourceManagement/SkinnedMesh/Animator/Animation.h"
+#include "Graphics/Material/Material.h"
+#include "Graphics/Animator/Animation.h"
 
 class SkinnedMesh
 {
@@ -21,12 +22,18 @@ public:
 		uint32_t count;
 	}indices;
 
-	std::vector<Mesh>          meshes;
-	std::vector<Material>      materials;
 	std::vector<Node*>		   nodes;
 	std::vector<Skin>		   skins;
+	std::vector<Mesh>          meshes;
+	
+	std::vector<Material>      materials;
+	std::vector<VkImage>       textures;
+	std::vector<VkSampler>     textureSamplers;
+
 	std::vector<Animation>     animations;
+
 	uint32_t activeAnimation = 0;
+
 	VulkanDevice*              vulkanDevice;
 
 	VkDescriptorSet descriptorSet;

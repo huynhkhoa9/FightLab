@@ -12,7 +12,9 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtx/transform.hpp>
+#include <gtx/compatibility.hpp>
 #include <gtx/quaternion.hpp>
+#include <gtc/quaternion.hpp>
 #include <gtx/hash.hpp>
 #include <gtc/type_ptr.hpp>
 
@@ -39,7 +41,7 @@
 
 const int MAX_JOINT_PER_VERTEX = 1;
 const int MAX_POPULATION = 1024;
-const int MAX_JOINTS = 64;
+const int MAX_JOINTS = 512;
 
 #endif
 

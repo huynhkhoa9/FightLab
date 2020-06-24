@@ -2,9 +2,12 @@
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
 
-#include "ResourceManagement/SkinnedMesh/Geometries/SkinnedMesh.h"
-#include "Graphics/RenderBackEnd/VulkanDevice.h"
 #include "Utility.h"
+#include "GLTFLoader.h"
+#include "Graphics/Material/Material.h"
+#include "Graphics/SkinnedMesh/SkinnedMesh.h"
+#include "Graphics/RenderBackEnd/VulkanDevice.h"
+
 class ResourceManager
 {
 public:
@@ -14,6 +17,8 @@ public:
 	std::map<const std::string, uint32_t> TextureImageViewIDMap;
 	std::map<const std::string, uint32_t> ModelIDMap;
 	std::map<const std::string, uint32_t> MeshIDMap;
+	
+	std::map<const std::string, uint32_t> TextureIDMap;
 
 	//Shader
 	std::vector<VkShaderModule> ShaderModulesLibrary;
@@ -22,8 +27,10 @@ public:
 	std::vector<VkImage> TextureImageLibrary;
 	std::vector<VkImageView> TextureImageViewLibrary;
 	std::vector<VkSampler> ImageSamplerLibrary;
-	std::vector<SkinnedMesh> meshes;
 	
+	std::vector<Texture> texturesLibrary;
+	
+	std::vector<SkinnedMesh> meshes;
 	//SkinnedMesh and Animation
 	ResourceManager(VulkanDevice* vkDevice) 
 	{
@@ -38,8 +45,8 @@ public:
 	//Load Texture from file
 	void LoadTexture(const std::string& filename, const std::string& textureName);
 
-	//Load Skinned Mesh
-	bool LoadSkinnedMesh(const std::string& path, const std::string& skinnedMeshName);
+	//Load Mesh
+	bool LoadMesh(const std::string& path, const std::string& meshName);
 
 	//Get shader
 	VkShaderModule GetShader(const std::string& shaderName);

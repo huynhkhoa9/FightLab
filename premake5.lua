@@ -41,6 +41,7 @@ project "FightLab"
 		"FightLab/vendors/vulkan/Include",
 		"FightLab/vendors/GLM/glm/",
 		"FightLab/vendors/tinyglTF",
+		"FightLab/vendors/cgltf",
 		"FightLab/vendors/VulkanMemoryAllocation/src"
 	}
 
@@ -98,7 +99,8 @@ project "Client"
 		"FightLab/vendors/GLFW/include",
 		"FightLab/vendors/vulkan/Include",
 		"FightLab/vendors/GLM/glm",
-		"FightLab/vendors/tinyglTF"
+		"FightLab/vendors/tinyglTF",
+		"FightLab/vendors/cgltf"
 	}
 
 	links

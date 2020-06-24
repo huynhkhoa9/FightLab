@@ -26,64 +26,61 @@ VkShaderModule ResourceManager::LoadShader(const std::string& filename, const st
 void ResourceManager::LoadTexture(const std::string& filename, const std::string& textureName)
 {
 	uint32_t mip = 0;
+	Texture texture;
 	createTexture(filename, textureName, mip);
 	CreateImageView(textureName, TextureImageLibrary[TextureImageIDMap[textureName]], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mip);
 	CreateSampler(textureName, mip);
 }
 
-bool ResourceManager::LoadSkinnedMesh(const std::string& path, const std::string& skinnedMeshName)
+bool ResourceManager::LoadMesh(const std::string& path, const std::string& meshName)
 {
-	tinygltf::Model glTFInput;
-	tinygltf::TinyGLTF gltfContext;
-	std::string error, warning;
-
-	bool fileLoaded = gltfContext.LoadASCIIFromFile(&glTFInput, &error, &warning, path);
-
-	if (fileLoaded) 
-	{
-		std::vector<SkinnedVertex> verticesBuffer;
-		std::vector<uint32_t>      indicesBuffer;
-
-		SkinnedMesh mesh;
-		mesh.vulkanDevice = vulkanDevice;
-		mesh.loadMaterials(glTFInput);
-		const tinygltf::Scene& scene = glTFInput.scenes[0];
-		for (size_t i = 0; i < scene.nodes.size(); i++) 
-		{
-			const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
-			mesh.loadNode(node, glTFInput, nullptr, -1, verticesBuffer, indicesBuffer);
-		}
-
-		mesh.loadSkin(glTFInput);
-		mesh.loadAnimations(glTFInput);
-		// Calculate initial pose
-		for (auto node : mesh.nodes)
-		{
-			mesh.updateJoints(node);
-		}
-		VkDeviceSize vertexBufferSize = sizeof(verticesBuffer[0]) * verticesBuffer.size();
-		VkDeviceSize indexBufferSize = indicesBuffer.size() * sizeof(uint32_t);
-
-		mesh.indices.count = static_cast<uint32_t>(indicesBuffer.size());
+	tinygltf::Model Input;
+	tinygltf::TinyGLTF loader;
+	std::string err;
+	std::string warn;
+	bool fileLoaded = loader.LoadASCIIFromFile(&Input, &err, &warn, path);
+	
+	if (!fileLoaded)
+		return fileLoaded;
 		
-		vulkanDevice->createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			mesh.vertices.buffer, mesh.vertices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, verticesBuffer.data());
+	SkinnedMesh mesh;
+	mesh.vulkanDevice = vulkanDevice;
+	std::vector<SkinnedVertex> verticesBuffer;
+	std::vector<uint32_t>      indicesBuffer;
 
-		vulkanDevice->createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			mesh.indices.buffer, mesh.indices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, indicesBuffer.data());
-
-		MeshIDMap[skinnedMeshName] = static_cast<uint32_t>(meshes.size());
-		LoadTexture("resources/models/FightLabDummy/viking_room.png", skinnedMeshName);
-		meshes.push_back(mesh);
-	}
-	else 
+	mesh.loadMaterials(Input);
+	const tinygltf::Scene& scene = Input.scenes[0];
+	for (size_t i = 0; i < scene.nodes.size(); i++)
 	{
-		std::cout << "ERROR: " << error << std::endl;
-		return false;
+		const tinygltf::Node node = Input.nodes[scene.nodes[i]];
+		mesh.loadNode(node, Input, nullptr, -1, verticesBuffer, indicesBuffer);
 	}
+	
+	mesh.loadSkin(Input);
+	/*
+	for (auto node : mesh.nodes)
+	{
+		mesh.updateJoints(node);
+	}
+	*/
 
+	VkDeviceSize vertexBufferSize = sizeof(verticesBuffer[0]) * verticesBuffer.size();
+	VkDeviceSize indexBufferSize = indicesBuffer.size() * sizeof(uint32_t);
+
+	mesh.indices.count = static_cast<uint32_t>(indicesBuffer.size());
+
+	vulkanDevice->createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mesh.vertices.buffer, mesh.vertices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, verticesBuffer.data());
+
+	vulkanDevice->createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mesh.indices.buffer, mesh.indices.alloc, VMA_MEMORY_USAGE_GPU_ONLY, indicesBuffer.data());
+
+	MeshIDMap[meshName] = static_cast<uint32_t>(meshes.size());
+	LoadTexture("resources/models/FightLabDummy/viking_room.png", meshName);
+	meshes.push_back(mesh);
+	
 	return true;
 }
 
@@ -357,10 +354,3 @@ void ResourceManager::generateMipmaps(VkImage image, VkFormat imageFormat, int32
 
 	endSingleTimeCommands(commandBuffer);
 }
-
-
-
-
-
-
-
